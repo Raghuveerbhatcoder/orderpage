@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sri Lakshman Traders - Inventory & WhatsApp Catalog</title>
+  <title>OrderPage Pro - Multi-Variant Inventory & WhatsApp Catalog</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- SheetJS for Excel & CSV reading/writing -->
+  <!-- SheetJS Library for Excel & CSV import/export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,9 +58,9 @@
           <div>
             <div class="flex items-center space-x-2">
               <span class="text-lg font-extrabold tracking-tight text-slate-900">Sri Lakshman Traders</span>
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">Live Catalog</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">Multi-Size</span>
             </div>
-            <p class="text-xs text-slate-500">Retail Inventory & WhatsApp Catalog</p>
+            <p class="text-xs text-slate-500">Inventory & WhatsApp Order Manager</p>
           </div>
         </div>
 
@@ -106,15 +106,15 @@
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total Products</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalSkus">0</div>
-            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Nested Variants Active</div>
+            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Across All Variants</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">📦</div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Units in Stock</span>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total Stock Count</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalUnits">0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Across all sizes</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Physical items on hand</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">📊</div>
         </div>
@@ -122,7 +122,7 @@
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Low / Out of Stock</span>
             <div class="text-2xl font-extrabold text-amber-600 mt-1" id="statLowStock">0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5" id="statOutStockSub">Hidden from buyers</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Variants needing restock</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">⚠️</div>
         </div>
@@ -130,7 +130,7 @@
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Inventory Value</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statInventoryValue">₹0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5">At retail pricing</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">At retail selling price</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">₹</div>
         </div>
@@ -143,12 +143,12 @@
             <input 
               type="text" 
               id="adminSearchInput" 
-              placeholder="Search by product name, SKU, size, category..." 
+              placeholder="Search by product name, SKU code, category, or size..." 
               class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" 
             />
           </div>
           <div class="flex items-center flex-wrap gap-2">
-            <button id="btnOpenAddProduct" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
+            <button id="btnOpenAddSku" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
               + Add Product
             </button>
             <button id="btnTriggerExcelModal" class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-xs sm:text-sm transition">
@@ -172,18 +172,18 @@
         </div>
       </div>
 
-      <!-- Inventory Table with Nested Variant Rows -->
+      <!-- Nested Multi-Variant Inventory Table (Fixed) -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs sm:text-sm">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                <th class="py-3 px-4">Item & Description</th>
-                <th class="py-3 px-3">SKU</th>
+                <th class="py-3 px-4 w-1/3">Product & Options</th>
+                <th class="py-3 px-3">SKU Code</th>
                 <th class="py-3 px-3">Category</th>
-                <th class="py-3 px-3">Size / Variants</th>
+                <th class="py-3 px-3">Size / Spec</th>
                 <th class="py-3 px-3">Price</th>
-                <th class="py-3 px-4 text-center">Available Stock</th>
+                <th class="py-3 px-4 text-center">Stock Available</th>
                 <th class="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -206,7 +206,7 @@
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold">Sri Lakshman Traders</h1>
           <p class="text-slate-300 text-xs sm:text-sm mt-1">
-            Displaying only items currently in stock. Choose your items and tap checkout to send your order on WhatsApp.
+            Displaying only available items. Select your preferred size and order directly on WhatsApp.
           </p>
         </div>
       </div>
@@ -215,10 +215,10 @@
         <input 
           type="text" 
           id="customerSearchInput" 
-          placeholder="Search available stock..." 
+          placeholder="Search in-stock products..." 
           class="w-full max-w-md px-4 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-dark"
         />
-        <span class="text-xs font-bold text-slate-500" id="customerInStockCounter">0 items available</span>
+        <span class="text-xs font-bold text-slate-500" id="customerInStockCounter">0 sizes available</span>
       </div>
 
       <div id="customerProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
@@ -226,10 +226,10 @@
       <div id="customerEmptyState" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200 p-8">
         <div class="text-4xl mb-2">📦</div>
         <h3 class="text-base font-bold text-slate-800">No items available right now</h3>
-        <p class="text-xs text-slate-500 mt-1">All matching products are currently out of stock.</p>
+        <p class="text-xs text-slate-500 mt-1">All matching products are currently out of stock or restock is in progress.</p>
       </div>
 
-      <!-- Floating Order Bar -->
+      <!-- Floating Cart Bar -->
       <div id="floatingCartBar" class="hidden fixed bottom-6 inset-x-4 max-w-xl mx-auto z-30">
         <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between border border-slate-700">
           <div>
@@ -263,50 +263,6 @@
   </main>
 
   <!-- ========================================== -->
-  <!-- MODAL: ADD / EDIT PRODUCT WITH SIZES       -->
-  <!-- ========================================== -->
-  <div id="modalProduct" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 my-8">
-      <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-extrabold text-slate-900 text-base" id="modalProductTitle">Add Product</h3>
-        <button id="btnCloseProductModal" class="text-slate-400 hover:text-slate-700">✕</button>
-      </div>
-      <form id="productForm" class="space-y-3.5 text-xs">
-        <input type="hidden" id="editProductId" value="" />
-        <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Product Name *</label>
-          <input type="text" id="inputProdName" placeholder="e.g. Alps Flaxseed Gel" required class="w-full p-2.5 border border-slate-300 rounded-xl font-semibold" />
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Category</label>
-            <input type="text" id="inputProdCategory" placeholder="e.g. Alps, Aqualogica" class="w-full p-2.5 border border-slate-300 rounded-xl" />
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Emoji</label>
-            <input type="text" id="inputProdEmoji" placeholder="🛍️" maxlength="4" class="w-full p-2.5 border border-slate-300 rounded-xl" />
-          </div>
-        </div>
-
-        <!-- Nested Sizes / Variants Container -->
-        <div class="border border-slate-200 bg-slate-50 p-3.5 rounded-2xl space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-slate-800 uppercase">Sizes & Variant Rows</span>
-            <button type="button" id="btnAddOptionRow" class="text-emerald-700 font-extrabold hover:text-emerald-800">+ Add Size Option</button>
-          </div>
-          <p class="text-[11px] text-slate-500">Each size option generates its own individual row with separate stock and price.</p>
-          <div id="variantsContainer" class="space-y-2 pt-1"></div>
-        </div>
-
-        <div class="flex justify-end space-x-2 pt-2 border-t">
-          <button type="button" id="btnCancelProductModal" class="px-4 py-2 rounded-xl text-slate-600 font-bold">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 text-white font-extrabold shadow">Save Product</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================== -->
   <!-- MODAL: EXCEL IMPORT & EXPORT (WORKING)     -->
   <!-- ========================================== -->
   <div id="modalExcel" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -315,19 +271,20 @@
       <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div>
           <h3 class="text-base font-bold text-slate-900">Excel / CSV Spreadsheet Sync</h3>
-          <p class="text-xs text-slate-500">Upload any inventory sheet, invoice, or supplier file</p>
+          <p class="text-xs text-slate-500">Upload any inventory sheet, invoice, or stock ledger</p>
         </div>
         <button id="btnCloseExcelModal" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">✕</button>
       </div>
 
       <div class="p-6 space-y-5">
+        
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">1. Select your Spreadsheet File</label>
           <div id="excelDropzone" class="border-2 border-dashed border-emerald-400 hover:border-emerald-600 rounded-2xl p-6 text-center cursor-pointer transition bg-emerald-50/20">
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" />
             <div class="text-3xl mb-1">📄</div>
             <p class="text-sm font-bold text-slate-800">Click to choose Excel / CSV file</p>
-            <p class="text-xs text-slate-500 mt-0.5">Supports .xlsx, .xls, and .csv files from Excel or Google Sheets</p>
+            <p class="text-xs text-slate-500 mt-0.5">Supports multi-variant and single-line SKUs</p>
             <div id="uploadFileStatus" class="hidden mt-3 p-2 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold"></div>
           </div>
         </div>
@@ -418,6 +375,42 @@
     </div>
   </div>
 
+  <!-- Modal: Add Product with Multi-Size Options -->
+  <div id="modalSku" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-900" id="modalSkuTitle">Add Product</h3>
+        <button id="btnCloseSkuModal" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <form id="skuForm" class="space-y-3.5 text-xs">
+        <input type="hidden" id="skuEditId" value="" />
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Product Name *</label>
+            <input type="text" id="skuInputName" placeholder="e.g. Alps Flaxseed Gel" required class="w-full p-2 border rounded-xl" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Category / Brand</label>
+            <input type="text" id="skuInputCategory" placeholder="e.g. Alps" class="w-full p-2 border rounded-xl" />
+          </div>
+        </div>
+
+        <div class="border border-slate-200 bg-slate-50 p-3 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-slate-800 uppercase">Sizes & Pricing</span>
+            <button type="button" id="btnAddOptionRow" class="text-xs font-bold text-brand-600 hover:text-brand-700">+ Add Size Option</button>
+          </div>
+          <div id="formVariantsContainer" class="space-y-2"></div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t">
+          <button type="button" id="btnCancelSkuModal" class="px-4 py-2 rounded-xl text-slate-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white font-bold">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal: Share Store Link -->
   <div id="modalShare" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 space-y-4 text-center">
@@ -433,16 +426,16 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
-    // Initial catalog structured with nested variants
-    const INITIAL_PRODUCTS = [
+    // Initial catalog matching nested structure
+    const INITIAL_CATALOG = [
       {
         id: 'p_1',
         name: 'Alps Flaxseed Gel',
         category: 'Alps',
         emoji: '🧴',
         variants: [
-          { id: 'v_1', sku: 'AP-101-100T', size: '100ml Tube', price: 120, stock: 2 },
-          { id: 'v_2', sku: 'AP-101-100B', size: '100ml Bottle', price: 110, stock: 4 }
+          { id: 'v_1', sku: 'AP-FLAX-100T', size: '100ml Tube', price: 120, stock: 2 },
+          { id: 'v_2', sku: 'AP-FLAX-100B', size: '100ml Bottle', price: 110, stock: 4 }
         ]
       },
       {
@@ -451,65 +444,59 @@
         category: 'Aqualogica',
         emoji: '🫧',
         variants: [
-          { id: 'v_3', sku: 'AQ-201-100', size: '100ml', price: 249, stock: 1 }
+          { id: 'v_3', sku: 'AQ-DETAN-100', size: '100ml', price: 249, stock: 1 }
         ]
       },
       {
         id: 'p_3',
-        name: 'Glow Facewash',
-        category: 'Aqualogica',
-        emoji: '✨',
+        name: 'Alps Rosemary water 200ml',
+        category: 'Alps',
+        emoji: '🌿',
         variants: [
-          { id: 'v_4', sku: 'AQ-202-100', size: '100ml', price: 249, stock: 0 }
+          { id: 'v_4', sku: 'AP-ROSE-200', size: '200ml', price: 399, stock: 2 }
         ]
       },
       {
         id: 'p_4',
-        name: 'Axe Dark Temptation 3 In 1 Body-Face & Hair Wash 400 ml',
+        name: 'Glow Facewash',
+        category: 'Aqualogica',
+        emoji: '✨',
+        variants: [
+          { id: 'v_5', sku: 'AQ-GLOW-100', size: '100ml', price: 249, stock: 0 }
+        ]
+      },
+      {
+        id: 'p_5',
+        name: 'Axe Dark Temptation 3 In 1 Body-Face & Hair Wash',
         category: 'Axe',
         emoji: '🚿',
         variants: [
-          { id: 'v_5', sku: 'AX-301-400', size: '400 ml', price: 380, stock: 8 }
+          { id: 'v_6', sku: 'AX-DARK-400', size: '400 ml', price: 380, stock: 8 }
         ]
       }
     ];
 
     let appState = {
-      products: [],
+      catalog: [],
       cart: {}, // { variantId: qty }
       orders: [],
       filterStatus: 'all',
       searchQuery: '',
       customerSearch: '',
       excelParsedRows: [],
-      excelHeaders: [],
-      expandedProductIds: new Set(['p_1']) // Default expand multi-variant product
+      excelHeaders: []
     };
 
     function loadState() {
-      const saved = localStorage.getItem('sl_traders_nested_catalog');
-      appState.products = saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-      const savedOrd = localStorage.getItem('sl_traders_orders');
+      const saved = localStorage.getItem('orderpage_v1_nested_catalog');
+      appState.catalog = saved ? JSON.parse(saved) : [...INITIAL_CATALOG];
+      const savedOrd = localStorage.getItem('orderpage_v1_orders');
       appState.orders = savedOrd ? JSON.parse(savedOrd) : [];
     }
 
     function saveState() {
-      localStorage.setItem('sl_traders_nested_catalog', JSON.stringify(appState.products));
-      localStorage.setItem('sl_traders_orders', JSON.stringify(appState.orders));
-    }
-
-    function getProductMeta(prod) {
-      let totalStock = 0;
-      let minPrice = Infinity;
-      let totalValue = 0;
-      prod.variants.forEach(v => {
-        const s = Number(v.stock || 0);
-        const p = Number(v.price || 0);
-        totalStock += s;
-        totalValue += (s * p);
-        if (p < minPrice) minPrice = p;
-      });
-      return { totalStock, minPrice: minPrice === Infinity ? 0 : minPrice, totalValue };
+      localStorage.setItem('orderpage_v1_nested_catalog', JSON.stringify(appState.catalog));
+      localStorage.setItem('orderpage_v1_orders', JSON.stringify(appState.orders));
     }
 
     // 1. ADMIN INVENTORY TABLE WITH NESTED VARIANT ROWS
@@ -518,291 +505,263 @@
       const status = appState.filterStatus;
       const catSelect = document.getElementById('filterCategorySelect').value;
 
-      let filtered = appState.products.filter(prod => {
-        const meta = getProductMeta(prod);
-        const matchesQuery = prod.name.toLowerCase().includes(q) || 
-                             (prod.category && prod.category.toLowerCase().includes(q)) ||
-                             prod.variants.some(v => (v.sku && v.sku.toLowerCase().includes(q)) || v.size.toLowerCase().includes(q));
-        const matchesCat = !catSelect || prod.category === catSelect;
-        
-        let matchesStatus = true;
-        if (status === 'in_stock') matchesStatus = meta.totalStock > 0;
-        if (status === 'low_stock') matchesStatus = meta.totalStock > 0 && meta.totalStock <= 5;
-        if (status === 'out_of_stock') matchesStatus = meta.totalStock <= 0;
+      let totalProducts = appState.catalog.length;
+      let totalUnits = 0;
+      let lowStockVariants = 0;
+      let totalValue = 0;
+      let inStockCount = 0;
+      let outStockCount = 0;
 
-        return matchesQuery && matchesCat && matchesStatus;
+      appState.catalog.forEach(p => {
+        let pStock = 0;
+        p.variants.forEach(v => {
+          const stk = Number(v.stock) || 0;
+          const prc = Number(v.price) || 0;
+          totalUnits += stk;
+          pStock += stk;
+          totalValue += (stk * prc);
+          if (stk <= 5) lowStockVariants++;
+        });
+        if (pStock > 0) inStockCount++;
+        else outStockCount++;
       });
 
-      // Update KPIs
-      let allUnits = 0;
-      let allVal = 0;
-      let lowCount = 0;
-      let outCount = 0;
+      document.getElementById('statTotalSkus').textContent = totalProducts;
+      document.getElementById('statTotalUnits').textContent = totalUnits;
+      document.getElementById('statLowStock').textContent = lowStockVariants;
+      document.getElementById('statInventoryValue').textContent = `₹${totalValue.toLocaleString()}`;
 
-      appState.products.forEach(p => {
-        const meta = getProductMeta(p);
-        allUnits += meta.totalStock;
-        allVal += meta.totalValue;
-        if (meta.totalStock === 0) outCount++;
-        else if (meta.totalStock <= 5) lowCount++;
-      });
+      document.getElementById('filterCountAll').textContent = totalProducts;
+      document.getElementById('filterCountInStock').textContent = inStockCount;
+      document.getElementById('filterCountLowStock').textContent = lowStockVariants;
+      document.getElementById('filterCountOutStock').textContent = outStockCount;
 
-      document.getElementById('statTotalSkus').textContent = appState.products.length;
-      document.getElementById('statTotalUnits').textContent = allUnits;
-      document.getElementById('statLowStock').textContent = lowCount + outCount;
-      document.getElementById('statOutStockSub').textContent = `${outCount} completely sold out`;
-      document.getElementById('statInventoryValue').textContent = `₹${allVal.toLocaleString()}`;
-
-      document.getElementById('filterCountAll').textContent = appState.products.length;
-      document.getElementById('filterCountInStock').textContent = appState.products.filter(p => getProductMeta(p).totalStock > 0).length;
-      document.getElementById('filterCountLowStock').textContent = appState.products.filter(p => {
-        const s = getProductMeta(p).totalStock;
-        return s > 0 && s <= 5;
-      }).length;
-      document.getElementById('filterCountOutStock').textContent = outCount;
-
-      // Category options
-      const categories = new Set(appState.products.map(p => p.category).filter(Boolean));
+      // Filter Categories
+      const categories = new Set(appState.catalog.map(i => i.category).filter(Boolean));
       const catDropdown = document.getElementById('filterCategorySelect');
       const currentCat = catDropdown.value;
       catDropdown.innerHTML = '<option value="">All Categories</option>' + Array.from(categories).sort().map(c => `<option value="${c}">${c}</option>`).join('');
       catDropdown.value = currentCat;
 
+      // Filter products
+      let filtered = appState.catalog.filter(p => {
+        const matchesCat = !catSelect || p.category === catSelect;
+        const matchesQuery = p.name.toLowerCase().includes(q) || 
+          (p.category && p.category.toLowerCase().includes(q)) ||
+          p.variants.some(v => (v.sku && v.sku.toLowerCase().includes(q)) || (v.size && v.size.toLowerCase().includes(q)));
+
+        let matchesStatus = true;
+        const pTotal = p.variants.reduce((a, b) => a + Number(b.stock || 0), 0);
+        if (status === 'in_stock') matchesStatus = pTotal > 0;
+        if (status === 'low_stock') matchesStatus = p.variants.some(v => Number(v.stock) > 0 && Number(v.stock) <= 5);
+        if (status === 'out_of_stock') matchesStatus = pTotal <= 0;
+
+        return matchesCat && matchesQuery && matchesStatus;
+      });
+
       const tbody = document.getElementById('inventoryTableBody');
       let html = '';
 
-      filtered.forEach(prod => {
-        const meta = getProductMeta(prod);
-        const hasMultiple = prod.variants.length > 1;
-        const isExpanded = appState.expandedProductIds.has(prod.id);
-        const isLow = meta.totalStock > 0 && meta.totalStock <= 5;
-        const isOut = meta.totalStock === 0;
+      filtered.forEach(p => {
+        const hasMultiple = p.variants.length > 1;
+        const minPrice = Math.min(...p.variants.map(v => Number(v.price || 0)));
 
-        // PARENT PRODUCT ROW
-        html += `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${hasMultiple ? 'bg-slate-50/50 cursor-pointer' : ''}" data-prodid="${prod.id}">
-            <td class="py-3 px-4">
-              <div class="flex items-center space-x-2.5">
-                <span class="text-xl">${prod.emoji || '📦'}</span>
-                <div>
-                  <div class="font-extrabold text-slate-900 flex items-center space-x-1.5">
-                    <span>${prod.name}</span>
-                    ${hasMultiple ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-stone-200 text-stone-700">${prod.variants.length} sizes ${isExpanded ? '▲' : '▼'}</span>` : ''}
+        p.variants.forEach((v, vIdx) => {
+          const stk = Number(v.stock) || 0;
+          const isOut = stk <= 0;
+          const isLow = stk > 0 && stk <= 5;
+          const isFirst = vIdx === 0;
+
+          html += `
+            <tr class="hover:bg-slate-50/90 transition border-b border-slate-100 ${isFirst && hasMultiple ? 'bg-slate-50/40' : ''}">
+              
+              <!-- Product column: spans rows if multi-variant or displays grouped name -->
+              <td class="py-3 px-4 font-bold text-slate-900">
+                ${isFirst ? `
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xl">${p.emoji || '📦'}</span>
+                    <div>
+                      <div class="font-extrabold text-sm text-slate-900">${p.name}</div>
+                      ${hasMultiple ? `<span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wide">Multi-Option Product (from ₹${minPrice})</span>` : ''}
+                    </div>
                   </div>
-                  <div class="text-[11px] text-slate-500 font-semibold">
-                    ${hasMultiple ? prod.variants.map(v => v.size).join(', ') : (prod.variants[0]?.size || 'Standard')}
+                ` : `
+                  <div class="pl-8 text-xs text-slate-400 font-semibold flex items-center space-x-1">
+                    <span>↳</span><span>${p.name}</span>
                   </div>
-                </div>
-              </div>
-            </td>
-            <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-600">
-              ${hasMultiple ? '<span class="text-slate-400 italic">Multi-SKU</span>' : (prod.variants[0]?.sku || '-')}
-            </td>
-            <td class="py-3 px-3">
-              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${prod.category || 'General'}</span>
-            </td>
-            <td class="py-3 px-3 text-xs font-bold text-slate-800">
-              ${hasMultiple ? `${prod.variants.length} Variants` : (prod.variants[0]?.size || 'Standard')}
-            </td>
-            <td class="py-3 px-3 font-extrabold text-slate-900">
-              ${hasMultiple ? `from ₹${meta.minPrice}` : `₹${prod.variants[0]?.price || 0}`}
-            </td>
-            <td class="py-3 px-4 text-center">
-              ${!hasMultiple ? `
-                <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
-                  <button class="btn-dec-v w-6 h-6 rounded bg-white text-slate-800 font-bold" data-pid="${prod.id}" data-vid="${prod.variants[0]?.id}">-</button>
-                  <span class="w-8 text-center font-bold text-xs">${meta.totalStock}</span>
-                  <button class="btn-inc-v w-6 h-6 rounded bg-white text-slate-800 font-bold" data-pid="${prod.id}" data-vid="${prod.variants[0]?.id}">+</button>
-                </div>
-              ` : `
-                <span class="inline-block px-2.5 py-1 rounded-xl bg-slate-200/80 font-bold text-xs text-slate-800">
-                  ${meta.totalStock} units total
+                `}
+              </td>
+
+              <!-- SKU -->
+              <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-700">
+                ${v.sku || '-'}
+              </td>
+
+              <!-- Category -->
+              <td class="py-3 px-3">
+                ${isFirst ? `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${p.category || 'General'}</span>` : ''}
+              </td>
+
+              <!-- Size / Variant Row -->
+              <td class="py-3 px-3">
+                <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 text-xs font-bold border border-emerald-200">
+                  <span>${v.size}</span>
                 </span>
-              `}
-              <span class="block text-[10px] font-bold mt-0.5 ${isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-emerald-600'}">
-                ${isOut ? 'Hidden from buyers' : isLow ? 'Running low' : 'Active'}
-              </span>
-            </td>
-            <td class="py-3 px-3 text-right">
-              <button class="btn-edit-prod text-slate-600 hover:text-slate-900 p-1 text-xs font-bold mr-1" data-id="${prod.id}">Edit</button>
-              <button class="btn-del-prod text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${prod.id}">Delete</button>
-            </td>
-          </tr>
-        `;
+              </td>
 
-        // NESTED SEPARATE ROWS FOR MULTIPLE SIZES
-        if (hasMultiple && isExpanded) {
-          prod.variants.forEach(v => {
-            const vStock = Number(v.stock || 0);
-            const vLow = vStock > 0 && vStock <= 5;
-            const vOut = vStock === 0;
+              <!-- Price -->
+              <td class="py-3 px-3 font-extrabold text-slate-900 text-xs">
+                ₹${v.price}
+              </td>
 
-            html += `
-              <tr class="bg-amber-50/30 border-b border-slate-100">
-                <td class="py-2.5 pl-10 pr-4 text-xs font-bold text-slate-800 flex items-center space-x-2">
-                  <span class="w-2 h-2 rounded-full ${vOut ? 'bg-red-500' : vLow ? 'bg-amber-500' : 'bg-emerald-500'}"></span>
-                  <span>↳ ${v.size}</span>
-                </td>
-                <td class="py-2 px-3 font-mono text-xs font-semibold text-slate-700">${v.sku || '-'}</td>
-                <td class="py-2 px-3 text-slate-400 text-xs">—</td>
-                <td class="py-2 px-3 text-xs font-extrabold text-slate-700">${v.size}</td>
-                <td class="py-2 px-3 text-xs font-extrabold text-slate-900">₹${v.price}</td>
-                <td class="py-2 px-4 text-center">
-                  <div class="inline-flex items-center space-x-1.5 bg-white border border-slate-200 p-0.5 rounded-xl">
-                    <button class="btn-dec-v w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs" data-pid="${prod.id}" data-vid="${v.id}">-</button>
-                    <span class="w-7 text-center font-extrabold text-xs text-slate-800">${vStock}</span>
-                    <button class="btn-inc-v w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs" data-pid="${prod.id}" data-vid="${v.id}">+</button>
-                  </div>
-                  <span class="block text-[9px] font-bold ${vOut ? 'text-red-600' : vLow ? 'text-amber-600' : 'text-slate-400'}">
-                    ${vOut ? 'Sold out' : vLow ? `Low · ${vStock} left` : 'Available'}
-                  </span>
-                </td>
-                <td class="py-2 px-3 text-right">
-                  <span class="text-[10px] text-slate-400 font-semibold">Variant</span>
-                </td>
-              </tr>
-            `;
-          });
-        }
+              <!-- Stock Counter for this specific variant -->
+              <td class="py-3 px-4 text-center">
+                <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
+                  <button class="btn-dec-stock w-6 h-6 rounded bg-white text-slate-800 font-extrabold hover:bg-slate-200 transition" data-pid="${p.id}" data-vid="${v.id}">-</button>
+                  <span class="w-8 text-center font-extrabold text-xs">${stk}</span>
+                  <button class="btn-inc-stock w-6 h-6 rounded bg-white text-slate-800 font-extrabold hover:bg-slate-200 transition" data-pid="${p.id}" data-vid="${v.id}">+</button>
+                </div>
+                <span class="block text-[10px] font-bold mt-0.5 ${isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-emerald-600'}">
+                  ${isOut ? 'Sold out (Hidden)' : isLow ? `Running low · ${stk} left` : `${stk} in stock`}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="py-3 px-3 text-right">
+                ${isFirst ? `
+                  <button class="btn-del-prod text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${p.id}">Delete</button>
+                ` : `
+                  <button class="btn-del-var text-stone-400 hover:text-red-600 p-1 text-xs" data-pid="${p.id}" data-vid="${v.id}" title="Remove size">✕</button>
+                `}
+              </td>
+
+            </tr>
+          `;
+        });
       });
 
       tbody.innerHTML = html;
 
-      // Expand / Collapse Multi-variant click
-      tbody.querySelectorAll('tr[data-prodid]').forEach(row => {
-        row.onclick = (e) => {
-          if (e.target.closest('button')) return; // ignore button clicks
-          const id = row.dataset.prodid;
-          const prod = appState.products.find(p => p.id === id);
-          if (prod && prod.variants.length > 1) {
-            if (appState.expandedProductIds.has(id)) appState.expandedProductIds.delete(id);
-            else appState.expandedProductIds.add(id);
-            renderAdminTable();
-          }
-        };
-      });
-
-      // Increment / Decrement Stock
-      tbody.querySelectorAll('.btn-inc-v').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          const prod = appState.products.find(p => p.id === b.dataset.pid);
+      // Stock buttons binding
+      tbody.querySelectorAll('.btn-inc-stock').forEach(b => {
+        b.onclick = () => {
+          const prod = appState.catalog.find(p => p.id === b.dataset.pid);
           const v = prod?.variants.find(x => x.id === b.dataset.vid);
           if (v) { v.stock = Number(v.stock || 0) + 1; saveState(); renderAdminTable(); }
         };
       });
 
-      tbody.querySelectorAll('.btn-dec-v').forEach(b => {
-        e = window.event || e;
-        e?.stopPropagation();
-        b.onclick = (ev) => {
-          ev.stopPropagation();
-          const prod = appState.products.find(p => p.id === b.dataset.pid);
+      tbody.querySelectorAll('.btn-dec-stock').forEach(b => {
+        b.onclick = () => {
+          const prod = appState.catalog.find(p => p.id === b.dataset.pid);
           const v = prod?.variants.find(x => x.id === b.dataset.vid);
           if (v && Number(v.stock) > 0) { v.stock = Number(v.stock) - 1; saveState(); renderAdminTable(); }
         };
       });
 
-      // Edit Product
-      tbody.querySelectorAll('.btn-edit-prod').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          openEditProductModal(b.dataset.id);
+      tbody.querySelectorAll('.btn-del-prod').forEach(b => {
+        b.onclick = () => {
+          appState.catalog = appState.catalog.filter(p => p.id !== b.dataset.id);
+          saveState();
+          renderAdminTable();
         };
       });
 
-      // Delete Product
-      tbody.querySelectorAll('.btn-del-prod').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          if (confirm('Delete this product and all its variants?')) {
-            appState.products = appState.products.filter(p => p.id !== b.dataset.id);
+      tbody.querySelectorAll('.btn-del-var').forEach(b => {
+        b.onclick = () => {
+          const prod = appState.catalog.find(p => p.id === b.dataset.pid);
+          if (prod && prod.variants.length > 1) {
+            prod.variants = prod.variants.filter(x => x.id !== b.dataset.vid);
             saveState();
             renderAdminTable();
+          } else {
+            alert('A product must have at least one variant.');
           }
         };
       });
     }
 
-    // 2. CUSTOMER VIEW: STRICTLY IN-STOCK ONLY
+    // 2. CUSTOMER STOREFRONT (IN-STOCK VARIANTS ONLY)
     function renderCustomerStorefront() {
       const q = appState.customerSearch.toLowerCase().trim();
+      let totalAvailableVariants = 0;
 
-      // Filter products having at least 1 in-stock variant
-      let availableItems = [];
-      appState.products.forEach(p => {
-        const inStockVariants = p.variants.filter(v => Number(v.stock) > 0);
-        if (inStockVariants.length > 0) {
-          const match = p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q));
-          if (match) {
-            availableItems.push({
+      // Filter products having at least one variant with stock > 0
+      const activeProducts = [];
+      appState.catalog.forEach(p => {
+        const inStockVars = p.variants.filter(v => Number(v.stock) > 0);
+        if (inStockVars.length > 0) {
+          const matchesQuery = p.name.toLowerCase().includes(q) || 
+            (p.category && p.category.toLowerCase().includes(q)) ||
+            inStockVars.some(v => v.size.toLowerCase().includes(q));
+
+          if (matchesQuery) {
+            activeProducts.push({
               ...p,
-              variants: inStockVariants
+              availableVariants: inStockVars
             });
+            totalAvailableVariants += inStockVars.length;
           }
         }
       });
 
       const grid = document.getElementById('customerProductGrid');
-      const empty = document.getElementById('customerEmptyState');
-      document.getElementById('customerInStockCounter').textContent = `${availableItems.length} products available`;
+      const emptyState = document.getElementById('customerEmptyState');
+      document.getElementById('customerInStockCounter').textContent = `${totalAvailableVariants} options available`;
 
-      if (availableItems.length === 0) {
+      if (activeProducts.length === 0) {
         grid.innerHTML = '';
-        empty.classList.remove('hidden');
+        emptyState.classList.remove('hidden');
         return;
       }
 
-      empty.classList.add('hidden');
-      grid.innerHTML = availableItems.map(p => {
-        const { minPrice } = getProductMeta(p);
-        return `
-          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-3xl">${p.emoji || '🛍️'}</span>
-                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  In Stock
-                </span>
-              </div>
-              <div class="mt-3">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${p.category || 'General'}</span>
-                <h3 class="font-extrabold text-slate-900 text-base leading-tight mt-0.5">${p.name}</h3>
-              </div>
+      emptyState.classList.add('hidden');
+      grid.innerHTML = activeProducts.map(p => `
+        <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-3 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-3xl">${p.emoji || '🛍️'}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                ${p.availableVariants.length} Size${p.availableVariants.length > 1 ? 's' : ''} in stock
+              </span>
             </div>
-
-            <!-- List Available Sizes -->
-            <div class="space-y-2 border-t border-slate-100 pt-3">
-              ${p.variants.map(v => {
-                const inCart = appState.cart[v.id] || 0;
-                return `
-                  <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs">
-                    <div>
-                      <span class="font-extrabold text-slate-800 block">${v.size}</span>
-                      <span class="text-emerald-700 font-extrabold">₹${v.price} &bull; <span class="text-slate-400 font-medium">${v.stock} left</span></span>
-                    </div>
-                    <div>
-                      ${inCart > 0 ? `
-                        <div class="flex items-center space-x-1.5 bg-whatsapp-light text-white rounded-lg p-0.5">
-                          <button class="btn-cart-dec w-6 h-6 rounded bg-black/10 font-bold" data-vid="${v.id}">-</button>
-                          <span class="text-xs font-bold px-1.5">${inCart}</span>
-                          <button class="btn-cart-inc w-6 h-6 rounded bg-black/10 font-bold" data-vid="${v.id}">+</button>
-                        </div>
-                      ` : `
-                        <button class="btn-add-variant px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-whatsapp-dark text-white font-bold transition shadow-sm" data-vid="${v.id}">
-                          + Add
-                        </button>
-                      `}
-                    </div>
-                  </div>
-                `;
-              }).join('')}
+            <div class="mt-3">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${p.category || 'General'}</span>
+              <h3 class="font-extrabold text-slate-900 text-base leading-tight mt-0.5">${p.name}</h3>
             </div>
           </div>
-        `;
-      }).join('');
 
-      grid.querySelectorAll('.btn-add-variant').forEach(b => {
+          <!-- List available in-stock sizes with direct add to order -->
+          <div class="space-y-2 pt-2 border-t border-slate-100">
+            ${p.availableVariants.map(v => {
+              const inCart = appState.cart[v.id] || 0;
+              return `
+                <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <div>
+                    <span class="font-bold text-slate-800 block">${v.size}</span>
+                    <span class="font-extrabold text-slate-900">₹${v.price} &bull; <span class="text-emerald-700 font-semibold">${v.stock} left</span></span>
+                  </div>
+                  <div>
+                    ${inCart > 0 ? `
+                      <div class="flex items-center space-x-1 bg-whatsapp-light text-white rounded-lg p-0.5 font-bold">
+                        <button class="btn-cust-dec w-6 h-6 rounded bg-black/10 text-xs" data-vid="${v.id}">-</button>
+                        <span class="px-1 text-xs">${inCart}</span>
+                        <button class="btn-cust-inc w-6 h-6 rounded bg-black/10 text-xs" data-vid="${v.id}" ${inCart >= v.stock ? 'disabled opacity-50' : ''}>+</button>
+                      </div>
+                    ` : `
+                      <button class="btn-cust-add px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-whatsapp-dark text-white font-bold text-xs" data-vid="${v.id}">
+                        + Add
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.btn-cust-add').forEach(b => {
         b.onclick = () => {
           const vid = b.dataset.vid;
           appState.cart[vid] = 1;
@@ -811,30 +770,27 @@
         };
       });
 
-      grid.querySelectorAll('.btn-cart-inc').forEach(b => {
+      grid.querySelectorAll('.btn-cust-inc').forEach(b => {
         b.onclick = () => {
           const vid = b.dataset.vid;
-          // check stock limit
-          let maxStock = 0;
-          appState.products.forEach(p => {
-            const found = p.variants.find(v => v.id === vid);
-            if (found) maxStock = found.stock;
+          let variant = null;
+          appState.catalog.forEach(p => {
+            const f = p.variants.find(x => x.id === vid);
+            if (f) variant = f;
           });
-          if (appState.cart[vid] < maxStock) {
-            appState.cart[vid]++;
+          if (variant && (appState.cart[vid] || 0) < variant.stock) {
+            appState.cart[vid] = (appState.cart[vid] || 0) + 1;
             updateCustomerCart();
             renderCustomerStorefront();
-          } else {
-            alert(`Only ${maxStock} units available in stock!`);
           }
         };
       });
 
-      grid.querySelectorAll('.btn-cart-dec').forEach(b => {
+      grid.querySelectorAll('.btn-cust-dec').forEach(b => {
         b.onclick = () => {
           const vid = b.dataset.vid;
-          appState.cart[vid]--;
-          if (appState.cart[vid] <= 0) delete appState.cart[vid];
+          if (appState.cart[vid] > 1) appState.cart[vid]--;
+          else delete appState.cart[vid];
           updateCustomerCart();
           renderCustomerStorefront();
         };
@@ -842,18 +798,22 @@
     }
 
     function updateCustomerCart() {
-      const vids = Object.keys(appState.cart);
+      const keys = Object.keys(appState.cart);
       let totalQty = 0;
       let totalSum = 0;
 
-      vids.forEach(vid => {
-        appState.products.forEach(p => {
+      keys.forEach(vid => {
+        let variant = null;
+        let product = null;
+        appState.catalog.forEach(p => {
           const v = p.variants.find(x => x.id === vid);
-          if (v) {
-            totalQty += appState.cart[vid];
-            totalSum += (appState.cart[vid] * Number(v.price));
-          }
+          if (v) { variant = v; product = p; }
         });
+
+        if (variant && appState.cart[vid] > 0) {
+          totalQty += appState.cart[vid];
+          totalSum += (appState.cart[vid] * Number(variant.price));
+        }
       });
 
       const bar = document.getElementById('floatingCartBar');
@@ -871,19 +831,20 @@
       }
 
       const drawer = document.getElementById('cartDrawerItems');
-      drawer.innerHTML = vids.map(vid => {
-        let itemInfo = null;
-        appState.products.forEach(p => {
+      drawer.innerHTML = keys.map(vid => {
+        let variant = null;
+        let product = null;
+        appState.catalog.forEach(p => {
           const v = p.variants.find(x => x.id === vid);
-          if (v) itemInfo = { name: p.name, size: v.size, price: v.price };
+          if (v) { variant = v; product = p; }
         });
-        if (!itemInfo) return '';
 
+        if (!variant) return '';
         return `
           <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
             <div>
-              <div class="text-xs font-bold text-slate-900">${itemInfo.name} (${itemInfo.size})</div>
-              <div class="text-[11px] text-slate-500 font-semibold">₹${itemInfo.price} &times; ${appState.cart[vid]} = ₹${itemInfo.price * appState.cart[vid]}</div>
+              <div class="text-xs font-bold text-slate-900">${product.name} (${variant.size})</div>
+              <div class="text-[11px] text-slate-500 font-semibold">₹${variant.price} &times; ${appState.cart[vid]} = ₹${variant.price * appState.cart[vid]}</div>
             </div>
             <button class="btn-remove-cart text-red-500 font-bold text-xs p-1" data-vid="${vid}">✕</button>
           </div>
@@ -900,7 +861,7 @@
       });
     }
 
-    // 3. EXCEL / CSV IMPORT ENGINE (HANDLES VARIANTS)
+    // 3. EXCEL / CSV IMPORT ENGINE (SUPPORTS MULTI-VARIANT & SIMPLE ROWS)
     function handleExcelUpload(file) {
       if (!file) return;
 
@@ -917,7 +878,7 @@
           const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
           if (!json || json.length < 2) {
-            statusEl.textContent = 'Spreadsheet has no data rows.';
+            statusEl.textContent = 'Uploaded file has no data rows.';
             return;
           }
 
@@ -926,6 +887,7 @@
 
           appState.excelHeaders = headers;
           appState.excelParsedRows = rows;
+
           statusEl.textContent = `✓ Loaded ${rows.length} rows from "${file.name}"`;
 
           const buildOptions = () => '<option value="">-- Ignore --</option>' + headers.map((h, i) => `<option value="${i}">${h}</option>`).join('');
@@ -933,12 +895,12 @@
             document.getElementById(id).innerHTML = buildOptions();
           });
 
-          // Auto detect headers
+          // Heuristic matching
           headers.forEach((h, idx) => {
             const lower = h.toLowerCase();
             if (lower.includes('sku') || lower.includes('code')) document.getElementById('mapSku').value = idx;
-            else if (lower.includes('name') || lower.includes('product') || lower.includes('item')) document.getElementById('mapName').value = idx;
-            else if (lower.includes('size') || lower.includes('variant') || lower.includes('spec')) document.getElementById('mapSize').value = idx;
+            else if (lower.includes('name') || lower.includes('product') || lower.includes('title')) document.getElementById('mapName').value = idx;
+            else if (lower.includes('size') || lower.includes('variant') || lower.includes('spec') || lower.includes('volume')) document.getElementById('mapSize').value = idx;
             else if (lower.includes('price') || lower.includes('rate') || lower.includes('mrp')) document.getElementById('mapPrice').value = idx;
             else if (lower.includes('stock') || lower.includes('qty') || lower.includes('quantity')) document.getElementById('mapStock').value = idx;
             else if (lower.includes('cat') || lower.includes('brand')) document.getElementById('mapCategory').value = idx;
@@ -966,8 +928,8 @@
       const idxCat = document.getElementById('mapCategory').value;
       const mode = document.querySelector('input[name="importMode"]:checked').value;
 
-      // Group rows by product name into nested variants
-      const productMap = new Map();
+      // Group rows by Product Name
+      const grouped = {};
 
       rows.forEach((row, i) => {
         const name = idxName !== '' ? String(row[idxName] || '').trim() : '';
@@ -979,44 +941,50 @@
         const stock = idxStock !== '' ? (parseInt(row[idxStock]) || 0) : 0;
         const category = idxCat !== '' && row[idxCat] ? String(row[idxCat]).trim() : 'General';
 
-        const variantObj = {
+        if (!grouped[name]) {
+          grouped[name] = {
+            id: 'p_' + Date.now() + '_' + i,
+            name,
+            category,
+            emoji: '📦',
+            variants: []
+          };
+        }
+
+        grouped[name].variants.push({
           id: 'v_' + Date.now() + '_' + i,
           sku,
           size,
           price,
           stock: Math.max(0, stock)
-        };
-
-        if (productMap.has(name.toLowerCase())) {
-          productMap.get(name.toLowerCase()).variants.push(variantObj);
-        } else {
-          productMap.set(name.toLowerCase(), {
-            id: 'p_' + Date.now() + '_' + i,
-            name,
-            category,
-            emoji: '📦',
-            variants: [variantObj]
-          });
-        }
+        });
       });
 
-      const importedProducts = Array.from(productMap.values());
-      if (importedProducts.length === 0) {
-        alert('No valid items found. Please verify column selection.');
+      const newProducts = Object.values(grouped);
+
+      if (newProducts.length === 0) {
+        alert('No valid items found. Verify column mappings.');
         return;
       }
 
       if (mode === 'replace') {
-        appState.products = importedProducts;
+        appState.catalog = newProducts;
       } else {
-        importedProducts.forEach(newP => {
-          const existing = appState.products.find(p => p.name.toLowerCase() === newP.name.toLowerCase());
+        newProducts.forEach(np => {
+          const existing = appState.catalog.find(p => p.name.toLowerCase() === np.name.toLowerCase());
           if (existing) {
-            // merge or replace variants
-            existing.variants = newP.variants;
-            existing.category = newP.category || existing.category;
+            np.variants.forEach(nv => {
+              const exVar = existing.variants.find(v => v.size.toLowerCase() === nv.size.toLowerCase());
+              if (exVar) {
+                exVar.price = nv.price;
+                exVar.stock = nv.stock;
+                exVar.sku = nv.sku;
+              } else {
+                existing.variants.push(nv);
+              }
+            });
           } else {
-            appState.products.push(newP);
+            appState.catalog.push(np);
           }
         });
       }
@@ -1025,12 +993,12 @@
       document.getElementById('modalExcel').classList.add('hidden');
       renderAdminTable();
       renderCustomerStorefront();
-      alert(`Imported ${importedProducts.length} products with all size variants synced!`);
+      alert(`Imported ${newProducts.length} product groups successfully!`);
     }
 
     function exportCatalogExcel() {
       const rows = [];
-      appState.products.forEach(p => {
+      appState.catalog.forEach(p => {
         p.variants.forEach(v => {
           rows.push({
             'Product Name': p.name,
@@ -1038,82 +1006,52 @@
             'SKU Code': v.sku,
             'Size / Spec': v.size,
             'Selling Price': v.price,
-            'Stock Count': v.stock
+            'Available Stock': v.stock
           });
         });
       });
+
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
-      XLSX.writeFile(wb, `SriLakshmanTraders_Inventory.xlsx`);
+      XLSX.writeFile(wb, 'SriLakshmanTraders_Inventory.xlsx');
     }
 
     function downloadTemplate() {
       const sample = [
-        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-101-100T', 'Size / Spec': '100ml Tube', 'Selling Price': 120, 'Stock Count': 15 },
-        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-101-100B', 'Size / Spec': '100ml Bottle', 'Selling Price': 110, 'Stock Count': 20 },
-        { 'Product Name': 'Detan Facewash 100ml', 'Category': 'Aqualogica', 'SKU Code': 'AQ-201-100', 'Size / Spec': '100ml', 'Selling Price': 249, 'Stock Count': 12 }
+        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-FLAX-100T', 'Size / Spec': '100ml Tube', 'Selling Price': 120, 'Available Stock': 15 },
+        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-FLAX-100B', 'Size / Spec': '100ml Bottle', 'Selling Price': 110, 'Available Stock': 20 },
+        { 'Product Name': 'Detan Facewash', 'Category': 'Aqualogica', 'SKU Code': 'AQ-DETAN-100', 'Size / Spec': '100ml', 'Selling Price': 249, 'Available Stock': 10 }
       ];
       const ws = XLSX.utils.json_to_sheet(sample);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Template');
-      XLSX.writeFile(wb, 'Nested_Inventory_Template.xlsx');
+      XLSX.writeFile(wb, 'MultiVariant_Inventory_Template.xlsx');
     }
 
-    // 4. ADD / EDIT PRODUCT MODAL LOGIC
-    function createVariantRowHtml(v = { sku: '', size: '', price: '', stock: '' }) {
+    // Modal Form Variant Rows
+    function createFormVariantHtml(size = 'Standard', price = '', stock = '', sku = '') {
       return `
-        <div class="variant-input-row grid grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-xl border border-slate-200">
-          <input type="text" placeholder="Size (e.g. 100ml Tube)" value="${v.size || ''}" class="col-span-4 p-1.5 border rounded-lg text-xs font-semibold" required />
-          <input type="text" placeholder="SKU" value="${v.sku || ''}" class="col-span-3 p-1.5 border rounded-lg text-xs font-mono" />
-          <input type="number" placeholder="₹ Price" value="${v.price || ''}" class="col-span-2 p-1.5 border rounded-lg text-xs font-semibold" required />
-          <input type="number" placeholder="Stock" value="${v.stock ?? ''}" class="col-span-2 p-1.5 border rounded-lg text-xs font-semibold" required />
-          <button type="button" class="btn-remove-v-row col-span-1 text-slate-400 hover:text-red-500 font-bold text-center text-sm">✕</button>
+        <div class="form-v-row grid grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-xl border border-slate-200">
+          <input type="text" placeholder="Size (e.g. 100ml Tube)" value="${size}" class="col-span-4 p-1.5 border rounded-lg text-xs" required />
+          <input type="text" placeholder="SKU" value="${sku}" class="col-span-3 p-1.5 border rounded-lg text-xs font-mono" />
+          <input type="number" placeholder="₹ Price" value="${price}" class="col-span-2 p-1.5 border rounded-lg text-xs font-bold" required />
+          <input type="number" placeholder="Stock" value="${stock}" class="col-span-2 p-1.5 border rounded-lg text-xs font-bold" required />
+          <button type="button" class="btn-remove-f-row col-span-1 text-slate-400 hover:text-red-600 font-bold text-center">✕</button>
         </div>
       `;
     }
 
-    function openAddProductModal() {
-      document.getElementById('modalProductTitle').textContent = 'Add Product';
-      document.getElementById('editProductId').value = '';
-      document.getElementById('inputProdName').value = '';
-      document.getElementById('inputProdCategory').value = '';
-      document.getElementById('inputProdEmoji').value = '🛍️';
-      const c = document.getElementById('variantsContainer');
-      c.innerHTML = createVariantRowHtml({ sku: '', size: 'Standard', price: '', stock: '' });
-      bindVariantRowRemoves();
-      document.getElementById('modalProduct').classList.remove('hidden');
-    }
-
-    function openEditProductModal(id) {
-      const prod = appState.products.find(p => p.id === id);
-      if (!prod) return;
-
-      document.getElementById('modalProductTitle').textContent = 'Edit Product';
-      document.getElementById('editProductId').value = prod.id;
-      document.getElementById('inputProdName').value = prod.name;
-      document.getElementById('inputProdCategory').value = prod.category || '';
-      document.getElementById('inputProdEmoji').value = prod.emoji || '🛍️';
-
-      const c = document.getElementById('variantsContainer');
-      c.innerHTML = prod.variants.map(v => createVariantRowHtml(v)).join('');
-      bindVariantRowRemoves();
-      document.getElementById('modalProduct').classList.remove('hidden');
-    }
-
-    function bindVariantRowRemoves() {
-      document.querySelectorAll('.btn-remove-v-row').forEach(b => {
+    function bindFormRemove() {
+      document.querySelectorAll('.btn-remove-f-row').forEach(b => {
         b.onclick = (e) => {
-          if (document.querySelectorAll('.variant-input-row').length > 1) {
-            e.target.closest('.variant-input-row').remove();
-          } else {
-            alert('A product must contain at least one size variant!');
-          }
+          if (document.querySelectorAll('.form-v-row').length > 1) e.target.closest('.form-v-row').remove();
+          else alert('At least one size option is required.');
         };
       });
     }
 
-    // INITIAL SETUP
+    // INITIALIZATION
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
@@ -1138,7 +1076,7 @@
         document.getElementById('viewOrders').classList.remove('hidden');
       };
 
-      // Filters
+      // Search & Filters
       document.getElementById('adminSearchInput').oninput = (e) => {
         appState.searchQuery = e.target.value;
         renderAdminTable();
@@ -1157,47 +1095,6 @@
           renderAdminTable();
         };
       });
-
-      // Product Modal
-      document.getElementById('btnOpenAddProduct').onclick = openAddProductModal;
-      document.getElementById('btnCloseProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
-      document.getElementById('btnCancelProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
-      document.getElementById('btnAddOptionRow').onclick = () => {
-        document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', createVariantRowHtml());
-        bindVariantRowRemoves();
-      };
-
-      document.getElementById('productForm').onsubmit = (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('editProductId').value;
-        const name = document.getElementById('inputProdName').value.trim();
-        const category = document.getElementById('inputProdCategory').value.trim();
-        const emoji = document.getElementById('inputProdEmoji').value.trim() || '🛍️';
-
-        const variants = [];
-        document.querySelectorAll('.variant-input-row').forEach((row, i) => {
-          const ins = row.querySelectorAll('input');
-          variants.push({
-            id: 'v_' + Date.now() + '_' + i,
-            size: ins[0].value.trim() || 'Standard',
-            sku: ins[1].value.trim() || `SKU-${1000 + i}`,
-            price: parseFloat(ins[2].value) || 0,
-            stock: parseInt(ins[3].value) || 0
-          });
-        });
-
-        if (editId) {
-          const p = appState.products.find(x => x.id === editId);
-          if (p) { p.name = name; p.category = category; p.emoji = emoji; p.variants = variants; }
-        } else {
-          appState.products.unshift({ id: 'p_' + Date.now(), name, category, emoji, variants });
-        }
-
-        saveState();
-        document.getElementById('modalProduct').classList.add('hidden');
-        renderAdminTable();
-        renderCustomerStorefront();
-      };
 
       // Excel Modal Handlers
       const openExcel = () => document.getElementById('modalExcel').classList.remove('hidden');
@@ -1222,7 +1119,56 @@
       document.getElementById('btnExportLiveCatalogExcel').onclick = exportCatalogExcel;
       document.getElementById('btnDownloadSampleTemplate').onclick = downloadTemplate;
 
-      // Cart & Checkout
+      // Add Product Modal
+      document.getElementById('btnOpenAddSku').onclick = () => {
+        document.getElementById('modalSkuTitle').textContent = 'Add Product';
+        document.getElementById('skuInputName').value = '';
+        document.getElementById('skuInputCategory').value = '';
+        const c = document.getElementById('formVariantsContainer');
+        c.innerHTML = createFormVariantHtml('Standard', '', '', '');
+        bindFormRemove();
+        document.getElementById('modalSku').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
+      document.getElementById('btnCancelSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
+
+      document.getElementById('btnAddOptionRow').onclick = () => {
+        document.getElementById('formVariantsContainer').insertAdjacentHTML('beforeend', createFormVariantHtml('', '', '', ''));
+        bindFormRemove();
+      };
+
+      document.getElementById('skuForm').onsubmit = (e) => {
+        e.preventDefault();
+        const name = document.getElementById('skuInputName').value.trim();
+        const category = document.getElementById('skuInputCategory').value.trim() || 'General';
+
+        const variants = [];
+        document.querySelectorAll('.form-v-row').forEach((row, idx) => {
+          const ins = row.querySelectorAll('input');
+          variants.push({
+            id: 'v_' + Date.now() + '_' + idx,
+            size: ins[0].value.trim() || 'Standard',
+            sku: ins[1].value.trim() || `SKU-${Date.now()}`,
+            price: parseFloat(ins[2].value) || 0,
+            stock: parseInt(ins[3].value) || 0
+          });
+        });
+
+        appState.catalog.unshift({
+          id: 'p_' + Date.now(),
+          name,
+          category,
+          emoji: '🛍️',
+          variants
+        });
+
+        saveState();
+        document.getElementById('modalSku').classList.add('hidden');
+        renderAdminTable();
+        renderCustomerStorefront();
+      };
+
+      // Cart & WhatsApp Checkout
       document.getElementById('btnOpenCartDrawer').onclick = () => {
         document.getElementById('cartDrawerBackdrop').classList.remove('hidden');
         document.getElementById('cartDrawer').classList.remove('translate-x-full');
@@ -1239,13 +1185,18 @@
 
         let msg = `*New Order - Sri Lakshman Traders*\nCustomer: ${name} (${phone})\n\n*Ordered Items:*\n`;
         Object.keys(appState.cart).forEach(vid => {
-          appState.products.forEach(p => {
+          let variant = null;
+          let product = null;
+          appState.catalog.forEach(p => {
             const v = p.variants.find(x => x.id === vid);
-            if (v) {
-              msg += `- ${p.name} (${v.size}) x ${appState.cart[vid]} = ₹${v.price * appState.cart[vid]}\n`;
-              v.stock = Math.max(0, v.stock - appState.cart[vid]);
-            }
+            if (v) { variant = v; product = p; }
           });
+
+          if (variant) {
+            const qty = appState.cart[vid];
+            msg += `- ${product.name} (${variant.size}) x ${qty} = ₹${variant.price * qty}\n`;
+            variant.stock = Math.max(0, variant.stock - qty);
+          }
         });
 
         saveState();
@@ -1257,7 +1208,7 @@
         document.getElementById('btnCloseCartDrawer').click();
       };
 
-      // Share Link Modal
+      // Share Modal
       document.getElementById('btnShareStore').onclick = () => {
         const liveUrl = (window.location.protocol.startsWith('http')) 
           ? window.location.href.split('#')[0].split('?')[0] 
