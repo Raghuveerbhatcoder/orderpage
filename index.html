@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrderPage Pro - Multi-Variant Inventory & WhatsApp Catalog</title>
+  <title>Sri Lakshman Traders - Live Cloud Catalog</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <!-- SheetJS Library for Excel & CSV import/export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -58,9 +58,9 @@
           <div>
             <div class="flex items-center space-x-2">
               <span class="text-lg font-extrabold tracking-tight text-slate-900">Sri Lakshman Traders</span>
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">Multi-Size</span>
+              <span id="cloudStatusBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase">Connecting...</span>
             </div>
-            <p class="text-xs text-slate-500">Inventory & WhatsApp Order Manager</p>
+            <p class="text-xs text-slate-500">Live Multi-Device Inventory</p>
           </div>
         </div>
 
@@ -72,15 +72,14 @@
             <span>Customer View (In-Stock Only)</span>
             <span id="headerCartCountBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-whatsapp-light text-white font-bold text-[10px]">0</span>
           </button>
-          <button id="navOrdersBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
-            <span>Orders Log</span>
-            <span id="headerOrdersCountBadge" class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">0</span>
-          </button>
         </div>
 
         <div class="flex items-center space-x-2">
-          <button id="headerImportExcelBtn" title="Import from Excel / CSV" class="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
-            <span>📊 Import Excel</span>
+          <button id="btnConfigureCloud" class="inline-flex items-center space-x-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition" title="Set Firebase Cloud Database URL">
+            <span>☁️ Cloud Sync</span>
+          </button>
+          <button id="headerImportExcelBtn" title="Import from Excel / CSV" class="inline-flex items-center space-x-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
+            <span>📊 Excel</span>
           </button>
           <button id="btnShareStore" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition" title="Share Store Link">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,12 +91,10 @@
     </div>
   </header>
 
-  <!-- Main Content Area -->
+  <!-- Main Content -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- ========================================== -->
-    <!-- VIEW 1: ADMIN INVENTORY MANAGER            -->
-    <!-- ========================================== -->
+    <!-- VIEW 1: ADMIN INVENTORY MANAGER -->
     <div id="viewAdmin" class="space-y-6">
       
       <!-- Metrics Strip -->
@@ -106,7 +103,7 @@
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total Products</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalSkus">0</div>
-            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Across All Variants</div>
+            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Live Cloud Synced</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">📦</div>
         </div>
@@ -122,7 +119,7 @@
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Low / Out of Stock</span>
             <div class="text-2xl font-extrabold text-amber-600 mt-1" id="statLowStock">0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Variants needing restock</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Hidden automatically</div>
           </div>
           <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">⚠️</div>
         </div>
@@ -172,7 +169,7 @@
         </div>
       </div>
 
-      <!-- Nested Multi-Variant Inventory Table (Fixed) -->
+      <!-- Nested Variant Rows Inventory Table -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs sm:text-sm">
@@ -183,7 +180,7 @@
                 <th class="py-3 px-3">Category</th>
                 <th class="py-3 px-3">Size / Spec</th>
                 <th class="py-3 px-3">Price</th>
-                <th class="py-3 px-4 text-center">Stock Available</th>
+                <th class="py-3 px-4 text-center">Stock Count</th>
                 <th class="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -194,9 +191,7 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: CUSTOMER STOREFRONT (IN-STOCK ONLY)-->
-    <!-- ========================================== -->
+    <!-- VIEW 2: CUSTOMER STOREFRONT (IN-STOCK ONLY) -->
     <div id="viewCustomer" class="hidden space-y-6">
       
       <div class="bg-gradient-to-r from-slate-900 to-whatsapp-deep rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
@@ -206,7 +201,7 @@
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold">Sri Lakshman Traders</h1>
           <p class="text-slate-300 text-xs sm:text-sm mt-1">
-            Displaying only available items. Select your preferred size and order directly on WhatsApp.
+            Displaying only available items. Choose your size and send your order directly on WhatsApp.
           </p>
         </div>
       </div>
@@ -225,8 +220,8 @@
       
       <div id="customerEmptyState" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200 p-8">
         <div class="text-4xl mb-2">📦</div>
-        <h3 class="text-base font-bold text-slate-800">No items available right now</h3>
-        <p class="text-xs text-slate-500 mt-1">All matching products are currently out of stock or restock is in progress.</p>
+        <h3 class="text-base font-bold text-slate-800">No items in stock right now</h3>
+        <p class="text-xs text-slate-500 mt-1">All matching products are currently out of stock.</p>
       </div>
 
       <!-- Floating Cart Bar -->
@@ -244,30 +239,37 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- VIEW 3: ORDERS LOG                         -->
-    <!-- ========================================== -->
-    <div id="viewOrders" class="hidden space-y-6">
-      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-        <div>
-          <h2 class="text-base font-bold text-slate-900">Recorded Customer Orders</h2>
-          <p class="text-xs text-slate-500">History of generated WhatsApp dispatches.</p>
-        </div>
-        <button id="btnClearOrdersLog" class="px-3 py-1.5 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold border border-red-200 transition">
-          Clear History
-        </button>
-      </div>
-      <div id="ordersListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100"></div>
-    </div>
-
   </main>
 
-  <!-- ========================================== -->
-  <!-- MODAL: EXCEL IMPORT & EXPORT (WORKING)     -->
-  <!-- ========================================== -->
+  <!-- MODAL: CONFIGURE CLOUD SYNC -->
+  <div id="modalCloudConfig" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="text-base font-bold text-slate-900">☁️ Firebase Realtime Cloud Sync</h3>
+        <button id="btnCloseCloudModal" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Paste your Firebase Database URL below. Any change made on this iPad will sync to all customer phones instantly when they scan the QR code.
+      </p>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Firebase Database URL</label>
+        <input 
+          type="url" 
+          id="cloudDbUrlInput" 
+          placeholder="https://your-project-default-rtdb.firebaseio.com" 
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+      <div class="flex justify-end space-x-2 pt-2 border-t">
+        <button id="btnCancelCloudModal" class="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+        <button id="btnSaveCloudConfig" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow">Connect & Sync Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXCEL SYNC -->
   <div id="modalExcel" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden">
-      
       <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div>
           <h3 class="text-base font-bold text-slate-900">Excel / CSV Spreadsheet Sync</h3>
@@ -275,16 +277,14 @@
         </div>
         <button id="btnCloseExcelModal" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">✕</button>
       </div>
-
       <div class="p-6 space-y-5">
-        
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">1. Select your Spreadsheet File</label>
           <div id="excelDropzone" class="border-2 border-dashed border-emerald-400 hover:border-emerald-600 rounded-2xl p-6 text-center cursor-pointer transition bg-emerald-50/20">
             <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" />
             <div class="text-3xl mb-1">📄</div>
             <p class="text-sm font-bold text-slate-800">Click to choose Excel / CSV file</p>
-            <p class="text-xs text-slate-500 mt-0.5">Supports multi-variant and single-line SKUs</p>
+            <p class="text-xs text-slate-500 mt-0.5">Supports multi-variant rows and single-line SKUs</p>
             <div id="uploadFileStatus" class="hidden mt-3 p-2 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold"></div>
           </div>
         </div>
@@ -294,7 +294,6 @@
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Verify Column Header Matching</span>
             <span id="detectedRowsCount" class="text-xs font-bold text-emerald-700"></span>
           </div>
-
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             <div>
               <label class="block text-slate-600 font-medium mb-1">SKU Code</label>
@@ -334,7 +333,7 @@
           </div>
 
           <button id="btnExecuteImport" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-sm shadow-md transition">
-            Import & Sync Inventory Now
+            Import & Sync to Cloud Now
           </button>
         </div>
 
@@ -346,7 +345,6 @@
             Export Current Inventory (.xlsx)
           </button>
         </div>
-
       </div>
     </div>
   </div>
@@ -379,11 +377,10 @@
   <div id="modalSku" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 my-8">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-900" id="modalSkuTitle">Add Product</h3>
+        <h3 class="font-bold text-slate-900">Add Product</h3>
         <button id="btnCloseSkuModal" class="text-slate-400 hover:text-slate-700">✕</button>
       </div>
       <form id="skuForm" class="space-y-3.5 text-xs">
-        <input type="hidden" id="skuEditId" value="" />
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-bold text-slate-600 mb-1">Product Name *</label>
@@ -405,13 +402,13 @@
 
         <div class="flex justify-end space-x-2 pt-2 border-t">
           <button type="button" id="btnCancelSkuModal" class="px-4 py-2 rounded-xl text-slate-600">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white font-bold">Save Product</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white font-bold">Save to Cloud</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Share Store Link -->
+  <!-- Modal: Share Store Link & QR Code -->
   <div id="modalShare" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 space-y-4 text-center">
       <h3 class="text-lg font-extrabold text-slate-900">Your Storefront Link</h3>
@@ -426,8 +423,8 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
-    // Initial catalog matching nested structure
-    const INITIAL_CATALOG = [
+    // Default baseline catalog
+    const BASELINE_CATALOG = [
       {
         id: 'p_1',
         name: 'Alps Flaxseed Gel',
@@ -478,25 +475,85 @@
 
     let appState = {
       catalog: [],
-      cart: {}, // { variantId: qty }
-      orders: [],
+      cart: {},
       filterStatus: 'all',
       searchQuery: '',
       customerSearch: '',
+      cloudDbUrl: '',
       excelParsedRows: [],
       excelHeaders: []
     };
 
-    function loadState() {
-      const saved = localStorage.getItem('orderpage_v1_nested_catalog');
-      appState.catalog = saved ? JSON.parse(saved) : [...INITIAL_CATALOG];
-      const savedOrd = localStorage.getItem('orderpage_v1_orders');
-      appState.orders = savedOrd ? JSON.parse(savedOrd) : [];
+    // Firebase REST endpoints
+    function getCloudEndpoint() {
+      if (!appState.cloudDbUrl) return null;
+      let url = appState.cloudDbUrl.trim().replace(/\/+$/, '');
+      if (!url.endsWith('.json')) url += '/catalog.json';
+      return url;
     }
 
-    function saveState() {
-      localStorage.setItem('orderpage_v1_nested_catalog', JSON.stringify(appState.catalog));
-      localStorage.setItem('orderpage_v1_orders', JSON.stringify(appState.orders));
+    async function syncDownFromCloud() {
+      const endpoint = getCloudEndpoint();
+      const badge = document.getElementById('cloudStatusBadge');
+
+      if (!endpoint) {
+        badge.textContent = 'Offline (Local)';
+        badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase';
+        const local = localStorage.getItem('orderpage_cloud_catalog');
+        appState.catalog = local ? JSON.parse(local) : [...BASELINE_CATALOG];
+        renderAdminTable();
+        renderCustomerStorefront();
+        return;
+      }
+
+      badge.textContent = 'Syncing...';
+      badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase';
+
+      try {
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        if (data && Array.isArray(data) && data.length > 0) {
+          appState.catalog = data;
+          localStorage.setItem('orderpage_cloud_catalog', JSON.stringify(data));
+          badge.textContent = '● Cloud Live';
+          badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase';
+        } else {
+          // If database is empty, push baseline
+          await syncUpToCloud();
+        }
+      } catch (err) {
+        console.warn('Cloud sync error, falling back to local storage', err);
+        badge.textContent = 'Sync Error';
+        badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 uppercase';
+        const local = localStorage.getItem('orderpage_cloud_catalog');
+        appState.catalog = local ? JSON.parse(local) : [...BASELINE_CATALOG];
+      }
+
+      renderAdminTable();
+      renderCustomerStorefront();
+    }
+
+    async function syncUpToCloud() {
+      const endpoint = getCloudEndpoint();
+      const badge = document.getElementById('cloudStatusBadge');
+      localStorage.setItem('orderpage_cloud_catalog', JSON.stringify(appState.catalog));
+
+      if (!endpoint) return;
+
+      badge.textContent = 'Saving...';
+      try {
+        await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(appState.catalog)
+        });
+        badge.textContent = '● Cloud Live';
+        badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase';
+      } catch (err) {
+        console.error('Failed to write to Firebase', err);
+        badge.textContent = 'Save Failed';
+        badge.className = 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 uppercase';
+      }
     }
 
     // 1. ADMIN INVENTORY TABLE WITH NESTED VARIANT ROWS
@@ -536,14 +593,12 @@
       document.getElementById('filterCountLowStock').textContent = lowStockVariants;
       document.getElementById('filterCountOutStock').textContent = outStockCount;
 
-      // Filter Categories
       const categories = new Set(appState.catalog.map(i => i.category).filter(Boolean));
       const catDropdown = document.getElementById('filterCategorySelect');
       const currentCat = catDropdown.value;
       catDropdown.innerHTML = '<option value="">All Categories</option>' + Array.from(categories).sort().map(c => `<option value="${c}">${c}</option>`).join('');
       catDropdown.value = currentCat;
 
-      // Filter products
       let filtered = appState.catalog.filter(p => {
         const matchesCat = !catSelect || p.category === catSelect;
         const matchesQuery = p.name.toLowerCase().includes(q) || 
@@ -574,15 +629,13 @@
 
           html += `
             <tr class="hover:bg-slate-50/90 transition border-b border-slate-100 ${isFirst && hasMultiple ? 'bg-slate-50/40' : ''}">
-              
-              <!-- Product column: spans rows if multi-variant or displays grouped name -->
               <td class="py-3 px-4 font-bold text-slate-900">
                 ${isFirst ? `
                   <div class="flex items-center space-x-2">
                     <span class="text-xl">${p.emoji || '📦'}</span>
                     <div>
                       <div class="font-extrabold text-sm text-slate-900">${p.name}</div>
-                      ${hasMultiple ? `<span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wide">Multi-Option Product (from ₹${minPrice})</span>` : ''}
+                      ${hasMultiple ? `<span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wide">Multi-Option (from ₹${minPrice})</span>` : ''}
                     </div>
                   </div>
                 ` : `
@@ -592,29 +645,24 @@
                 `}
               </td>
 
-              <!-- SKU -->
               <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-700">
                 ${v.sku || '-'}
               </td>
 
-              <!-- Category -->
               <td class="py-3 px-3">
                 ${isFirst ? `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${p.category || 'General'}</span>` : ''}
               </td>
 
-              <!-- Size / Variant Row -->
               <td class="py-3 px-3">
                 <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-900 text-xs font-bold border border-emerald-200">
                   <span>${v.size}</span>
                 </span>
               </td>
 
-              <!-- Price -->
               <td class="py-3 px-3 font-extrabold text-slate-900 text-xs">
                 ₹${v.price}
               </td>
 
-              <!-- Stock Counter for this specific variant -->
               <td class="py-3 px-4 text-center">
                 <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
                   <button class="btn-dec-stock w-6 h-6 rounded bg-white text-slate-800 font-extrabold hover:bg-slate-200 transition" data-pid="${p.id}" data-vid="${v.id}">-</button>
@@ -622,11 +670,10 @@
                   <button class="btn-inc-stock w-6 h-6 rounded bg-white text-slate-800 font-extrabold hover:bg-slate-200 transition" data-pid="${p.id}" data-vid="${v.id}">+</button>
                 </div>
                 <span class="block text-[10px] font-bold mt-0.5 ${isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-emerald-600'}">
-                  ${isOut ? 'Sold out (Hidden)' : isLow ? `Running low · ${stk} left` : `${stk} in stock`}
+                  ${isOut ? 'Sold out (Hidden from buyers)' : isLow ? `Running low · ${stk} left` : `${stk} in stock`}
                 </span>
               </td>
 
-              <!-- Actions -->
               <td class="py-3 px-3 text-right">
                 ${isFirst ? `
                   <button class="btn-del-prod text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${p.id}">Delete</button>
@@ -634,7 +681,6 @@
                   <button class="btn-del-var text-stone-400 hover:text-red-600 p-1 text-xs" data-pid="${p.id}" data-vid="${v.id}" title="Remove size">✕</button>
                 `}
               </td>
-
             </tr>
           `;
         });
@@ -642,40 +688,47 @@
 
       tbody.innerHTML = html;
 
-      // Stock buttons binding
       tbody.querySelectorAll('.btn-inc-stock').forEach(b => {
-        b.onclick = () => {
+        b.onclick = async () => {
           const prod = appState.catalog.find(p => p.id === b.dataset.pid);
           const v = prod?.variants.find(x => x.id === b.dataset.vid);
-          if (v) { v.stock = Number(v.stock || 0) + 1; saveState(); renderAdminTable(); }
+          if (v) { 
+            v.stock = Number(v.stock || 0) + 1; 
+            renderAdminTable();
+            await syncUpToCloud(); 
+          }
         };
       });
 
       tbody.querySelectorAll('.btn-dec-stock').forEach(b => {
-        b.onclick = () => {
+        b.onclick = async () => {
           const prod = appState.catalog.find(p => p.id === b.dataset.pid);
           const v = prod?.variants.find(x => x.id === b.dataset.vid);
-          if (v && Number(v.stock) > 0) { v.stock = Number(v.stock) - 1; saveState(); renderAdminTable(); }
+          if (v && Number(v.stock) > 0) { 
+            v.stock = Number(v.stock) - 1; 
+            renderAdminTable();
+            await syncUpToCloud(); 
+          }
         };
       });
 
       tbody.querySelectorAll('.btn-del-prod').forEach(b => {
-        b.onclick = () => {
+        b.onclick = async () => {
           appState.catalog = appState.catalog.filter(p => p.id !== b.dataset.id);
-          saveState();
           renderAdminTable();
+          await syncUpToCloud();
         };
       });
 
       tbody.querySelectorAll('.btn-del-var').forEach(b => {
-        b.onclick = () => {
+        b.onclick = async () => {
           const prod = appState.catalog.find(p => p.id === b.dataset.pid);
           if (prod && prod.variants.length > 1) {
             prod.variants = prod.variants.filter(x => x.id !== b.dataset.vid);
-            saveState();
             renderAdminTable();
+            await syncUpToCloud();
           } else {
-            alert('A product must have at least one variant.');
+            alert('A product must have at least one size.');
           }
         };
       });
@@ -686,7 +739,6 @@
       const q = appState.customerSearch.toLowerCase().trim();
       let totalAvailableVariants = 0;
 
-      // Filter products having at least one variant with stock > 0
       const activeProducts = [];
       appState.catalog.forEach(p => {
         const inStockVars = p.variants.filter(v => Number(v.stock) > 0);
@@ -696,10 +748,7 @@
             inStockVars.some(v => v.size.toLowerCase().includes(q));
 
           if (matchesQuery) {
-            activeProducts.push({
-              ...p,
-              availableVariants: inStockVars
-            });
+            activeProducts.push({ ...p, availableVariants: inStockVars });
             totalAvailableVariants += inStockVars.length;
           }
         }
@@ -707,7 +756,7 @@
 
       const grid = document.getElementById('customerProductGrid');
       const emptyState = document.getElementById('customerEmptyState');
-      document.getElementById('customerInStockCounter').textContent = `${totalAvailableVariants} options available`;
+      document.getElementById('customerInStockCounter').textContent = `${totalAvailableVariants} sizes available`;
 
       if (activeProducts.length === 0) {
         grid.innerHTML = '';
@@ -731,7 +780,6 @@
             </div>
           </div>
 
-          <!-- List available in-stock sizes with direct add to order -->
           <div class="space-y-2 pt-2 border-t border-slate-100">
             ${p.availableVariants.map(v => {
               const inCart = appState.cart[v.id] || 0;
@@ -763,8 +811,7 @@
 
       grid.querySelectorAll('.btn-cust-add').forEach(b => {
         b.onclick = () => {
-          const vid = b.dataset.vid;
-          appState.cart[vid] = 1;
+          appState.cart[b.dataset.vid] = 1;
           updateCustomerCart();
           renderCustomerStorefront();
         };
@@ -861,7 +908,7 @@
       });
     }
 
-    // 3. EXCEL / CSV IMPORT ENGINE (SUPPORTS MULTI-VARIANT & SIMPLE ROWS)
+    // 3. EXCEL / CSV IMPORT ENGINE
     function handleExcelUpload(file) {
       if (!file) return;
 
@@ -887,7 +934,6 @@
 
           appState.excelHeaders = headers;
           appState.excelParsedRows = rows;
-
           statusEl.textContent = `✓ Loaded ${rows.length} rows from "${file.name}"`;
 
           const buildOptions = () => '<option value="">-- Ignore --</option>' + headers.map((h, i) => `<option value="${i}">${h}</option>`).join('');
@@ -895,7 +941,6 @@
             document.getElementById(id).innerHTML = buildOptions();
           });
 
-          // Heuristic matching
           headers.forEach((h, idx) => {
             const lower = h.toLowerCase();
             if (lower.includes('sku') || lower.includes('code')) document.getElementById('mapSku').value = idx;
@@ -916,7 +961,7 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function executeExcelImport() {
+    async function executeExcelImport() {
       const rows = appState.excelParsedRows;
       if (!rows || rows.length === 0) return;
 
@@ -928,9 +973,7 @@
       const idxCat = document.getElementById('mapCategory').value;
       const mode = document.querySelector('input[name="importMode"]:checked').value;
 
-      // Group rows by Product Name
       const grouped = {};
-
       rows.forEach((row, i) => {
         const name = idxName !== '' ? String(row[idxName] || '').trim() : '';
         if (!name) return;
@@ -961,9 +1004,8 @@
       });
 
       const newProducts = Object.values(grouped);
-
       if (newProducts.length === 0) {
-        alert('No valid items found. Verify column mappings.');
+        alert('No valid items found.');
         return;
       }
 
@@ -989,11 +1031,11 @@
         });
       }
 
-      saveState();
       document.getElementById('modalExcel').classList.add('hidden');
       renderAdminTable();
       renderCustomerStorefront();
-      alert(`Imported ${newProducts.length} product groups successfully!`);
+      await syncUpToCloud();
+      alert(`Imported ${newProducts.length} product groups and synced live to cloud!`);
     }
 
     function exportCatalogExcel() {
@@ -1029,7 +1071,6 @@
       XLSX.writeFile(wb, 'MultiVariant_Inventory_Template.xlsx');
     }
 
-    // Modal Form Variant Rows
     function createFormVariantHtml(size = 'Standard', price = '', stock = '', sku = '') {
       return `
         <div class="form-v-row grid grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-xl border border-slate-200">
@@ -1052,28 +1093,28 @@
     }
 
     // INITIALIZATION
-    document.addEventListener('DOMContentLoaded', () => {
-      loadState();
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check saved Firebase endpoint
+      const savedDb = localStorage.getItem('orderpage_firebase_url');
+      if (savedDb) {
+        appState.cloudDbUrl = savedDb;
+        document.getElementById('cloudDbUrlInput').value = savedDb;
+      }
+
+      // Initial download from Cloud
+      await syncDownFromCloud();
 
       // Navigation
       document.getElementById('navAdminBtn').onclick = () => {
         document.getElementById('viewAdmin').classList.remove('hidden');
         document.getElementById('viewCustomer').classList.add('hidden');
-        document.getElementById('viewOrders').classList.add('hidden');
         renderAdminTable();
       };
 
       document.getElementById('navCustomerBtn').onclick = () => {
         document.getElementById('viewAdmin').classList.add('hidden');
         document.getElementById('viewCustomer').classList.remove('hidden');
-        document.getElementById('viewOrders').classList.add('hidden');
         renderCustomerStorefront();
-      };
-
-      document.getElementById('navOrdersBtn').onclick = () => {
-        document.getElementById('viewAdmin').classList.add('hidden');
-        document.getElementById('viewCustomer').classList.add('hidden');
-        document.getElementById('viewOrders').classList.remove('hidden');
       };
 
       // Search & Filters
@@ -1096,7 +1137,21 @@
         };
       });
 
-      // Excel Modal Handlers
+      // Cloud Modal
+      document.getElementById('btnConfigureCloud').onclick = () => {
+        document.getElementById('modalCloudConfig').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseCloudModal').onclick = () => document.getElementById('modalCloudConfig').classList.add('hidden');
+      document.getElementById('btnCancelCloudModal').onclick = () => document.getElementById('modalCloudConfig').classList.add('hidden');
+      document.getElementById('btnSaveCloudConfig').onclick = async () => {
+        const val = document.getElementById('cloudDbUrlInput').value.trim();
+        appState.cloudDbUrl = val;
+        localStorage.setItem('orderpage_firebase_url', val);
+        document.getElementById('modalCloudConfig').classList.add('hidden');
+        await syncDownFromCloud();
+      };
+
+      // Excel Handlers
       const openExcel = () => document.getElementById('modalExcel').classList.remove('hidden');
       document.getElementById('headerImportExcelBtn').onclick = openExcel;
       document.getElementById('btnTriggerExcelModal').onclick = openExcel;
@@ -1121,7 +1176,6 @@
 
       // Add Product Modal
       document.getElementById('btnOpenAddSku').onclick = () => {
-        document.getElementById('modalSkuTitle').textContent = 'Add Product';
         document.getElementById('skuInputName').value = '';
         document.getElementById('skuInputCategory').value = '';
         const c = document.getElementById('formVariantsContainer');
@@ -1137,7 +1191,7 @@
         bindFormRemove();
       };
 
-      document.getElementById('skuForm').onsubmit = (e) => {
+      document.getElementById('skuForm').onsubmit = async (e) => {
         e.preventDefault();
         const name = document.getElementById('skuInputName').value.trim();
         const category = document.getElementById('skuInputCategory').value.trim() || 'General';
@@ -1162,13 +1216,13 @@
           variants
         });
 
-        saveState();
         document.getElementById('modalSku').classList.add('hidden');
         renderAdminTable();
         renderCustomerStorefront();
+        await syncUpToCloud();
       };
 
-      // Cart & WhatsApp Checkout
+      // Cart & Checkout
       document.getElementById('btnOpenCartDrawer').onclick = () => {
         document.getElementById('cartDrawerBackdrop').classList.remove('hidden');
         document.getElementById('cartDrawer').classList.remove('translate-x-full');
@@ -1178,7 +1232,7 @@
         document.getElementById('cartDrawer').classList.add('translate-x-full');
       };
 
-      document.getElementById('btnSendWhatsAppOrder').onclick = () => {
+      document.getElementById('btnSendWhatsAppOrder').onclick = async () => {
         const name = document.getElementById('buyerNameInput').value.trim();
         const phone = document.getElementById('buyerPhoneInput').value.trim();
         if (!name || !phone) { alert('Please enter your name and phone number'); return; }
@@ -1199,16 +1253,16 @@
           }
         });
 
-        saveState();
         window.open(`https://wa.me/919876543210?text=${encodeURIComponent(msg)}`, '_blank');
         appState.cart = {};
         updateCustomerCart();
         renderAdminTable();
         renderCustomerStorefront();
         document.getElementById('btnCloseCartDrawer').click();
+        await syncUpToCloud();
       };
 
-      // Share Modal
+      // Share Modal with QR code
       document.getElementById('btnShareStore').onclick = () => {
         const liveUrl = (window.location.protocol.startsWith('http')) 
           ? window.location.href.split('#')[0].split('?')[0] 
@@ -1224,8 +1278,6 @@
         document.execCommand('copy');
         alert('Store link copied to clipboard!');
       };
-
-      renderAdminTable();
     });
   </script>
 </body>
