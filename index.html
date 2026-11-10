@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orderpage 2.0 Improved - Multi-Size & Counter POS</title>
+  <title>OrderPage Pro - High Capacity Inventory & WhatsApp Catalog</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,48 +16,85 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            whatsapp: {
+              light: '#25D366',
+              dark: '#128C7E',
+              deep: '#075E54'
+            }
           }
         }
       }
     }
   </script>
   <style>
-    body { background-color: #fbf9f5; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #f1ede6; }
-    ::-webkit-scrollbar-thumb { background: #d7d1c5; border-radius: 9999px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .badge-in-stock { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-low-stock { background-color: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+    .badge-out-of-stock { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.18s ease-out forwards; }
   </style>
 </head>
-<body class="text-stone-900 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-  <header class="sticky top-0 z-40 bg-[#fbf9f5]/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+  <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm backdrop-blur-md bg-white/95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl font-extrabold text-stone-900" id="headerStoreName">Products</span>
-          <span class="text-xs font-bold text-stone-500 bg-stone-200/70 px-2 py-0.5 rounded-full" id="headerProductCountBadge">0 products</span>
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-whatsapp-light flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-lg font-extrabold tracking-tight text-slate-900" id="headerStoreName">OrderPage Pro</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 tracking-wide uppercase">Unlimited SKUs</span>
+            </div>
+            <p class="text-xs text-slate-500">Enhanced clone with Excel Sync & Deep Search</p>
+          </div>
         </div>
 
-        <div class="flex items-center bg-stone-200/70 p-1 rounded-xl text-xs sm:text-sm font-semibold">
-          <button id="navProductsBtn" class="px-3 py-1.5 rounded-lg bg-white text-stone-900 shadow-sm flex items-center space-x-1.5 transition">
-            <span>📦 Products</span>
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold">
+          <button id="navAdminBtn" class="px-3.5 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition-all duration-150 flex items-center space-x-1.5">
+            <span>Inventory & SKUs</span>
           </button>
-          <button id="navCounterBtn" class="px-3 py-1.5 rounded-lg text-stone-600 hover:text-stone-900 flex items-center space-x-1.5 transition">
-            <span>⚡ Counter order</span>
-            <span id="counterCartBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-[#008744] text-white font-bold text-[10px]">0</span>
+          <button id="navCustomerBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150 flex items-center space-x-1.5">
+            <span>Customer View</span>
+            <span id="headerCartCountBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-whatsapp-light text-white font-bold text-[10px]">0</span>
           </button>
-          <button id="navCustomerBtn" class="px-3 py-1.5 rounded-lg text-stone-600 hover:text-stone-900 flex items-center space-x-1.5 transition">
-            <span>🛍️ Online Store</span>
-          </button>
-          <button id="navSalesBtn" class="px-3 py-1.5 rounded-lg text-stone-600 hover:text-stone-900 flex items-center space-x-1.5 transition">
-            <span>📜 Sales Log</span>
+          <button id="navOrdersBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150 flex items-center space-x-1.5">
+            <span>Orders Log</span>
+            <span id="headerOrdersCountBadge" class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">0</span>
           </button>
         </div>
 
         <div class="flex items-center space-x-2">
-          <button id="btnShareStore" class="p-2 rounded-xl text-stone-600 hover:bg-stone-200 transition" title="Share Store Link">
+          <button id="headerImportExcelBtn" title="Import from Excel / CSV" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
+            <span>Import Excel</span>
+          </button>
+          <button id="headerSettingsBtn" title="Shop Settings" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
         </div>
@@ -64,707 +102,384 @@
     </div>
   </header>
 
-  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:py-6">
-    <div id="viewProducts" class="space-y-4">
-      <div class="relative">
-        <input type="text" id="productSearchInput" placeholder="Search products..." class="w-full pl-4 pr-4 py-2.5 bg-stone-100/90 border border-stone-200 rounded-2xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 transition" />
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-semibold text-stone-700">
-        <button class="py-2.5 px-3 bg-[#f5f1ea] border border-stone-200 rounded-xl hover:bg-stone-200/70 transition flex items-center justify-center space-x-1.5">
-          <span>🖊️</span><span>Edit prices</span>
-        </button>
-        <button class="py-2.5 px-3 bg-[#f5f1ea] border border-stone-200 rounded-xl hover:bg-stone-200/70 transition flex items-center justify-center space-x-1.5">
-          <span>%</span><span>Change all prices</span>
-        </button>
-        <button class="py-2.5 px-3 bg-[#f5f1ea] border border-stone-200 rounded-xl hover:bg-stone-200/70 transition flex items-center justify-center space-x-1.5">
-          <span>📋</span><span>Count all</span>
-        </button>
-        <button class="py-2.5 px-3 bg-[#f5f1ea] border border-stone-200 rounded-xl hover:bg-stone-200/70 transition flex items-center justify-center space-x-1.5">
-          <span>📦</span><span id="labelRestockCount">Restock list · 0</span>
-        </button>
-      </div>
-
-      <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-bold">
-        <button class="filter-tab-btn px-4 py-1.5 rounded-full bg-stone-900 text-white" data-status="all">
-          All <span id="badgeCountAll">0</span>
-        </button>
-        <button class="filter-tab-btn px-4 py-1.5 rounded-full bg-[#f3efe8] text-stone-700 hover:bg-stone-200" data-status="low">
-          Running low <span id="badgeCountLow">0</span>
-        </button>
-        <button class="filter-tab-btn px-4 py-1.5 rounded-full bg-[#f3efe8] text-stone-700 hover:bg-stone-200" data-status="soldout">
-          Sold out <span id="badgeCountSoldOut">0</span>
-        </button>
-      </div>
-
-      <div class="flex items-center justify-between text-xs text-stone-500 font-medium px-1">
-        <span>⇅ Drag to reorder</span>
-      </div>
-
-      <div id="productsListContainer" class="space-y-3"></div>
-
-      <div class="sticky bottom-4 inset-x-0 pt-2 flex items-center space-x-2 z-20">
-        <button id="btnOpenAddProduct" class="flex-1 py-3 px-4 rounded-2xl bg-[#008744] hover:bg-[#007038] text-white font-extrabold text-sm shadow-md transition flex items-center justify-center space-x-1.5">
-          <span class="text-base leading-none">+</span>
-          <span>Add product</span>
-        </button>
-        <button class="py-3 px-4 rounded-2xl bg-[#f5f1ea] border border-stone-300 hover:bg-stone-200 text-stone-800 font-bold text-xs sm:text-sm transition flex items-center space-x-1.5">
-          <span>📋</span>
-          <span>Paste a list</span>
-        </button>
-      </div>
-    </div>
-
-    <div id="viewCounter" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <button id="btnCounterBackToProducts" class="p-1 rounded-lg text-stone-600 hover:bg-stone-200">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <h2 class="text-lg font-bold text-stone-900">Counter order</h2>
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div id="viewAdmin" class="space-y-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total SKUs</span>
+            <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalSkus">0</div>
+            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">High Capacity DB</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">📦</div>
         </div>
-        <span class="text-xs font-semibold px-3 py-1 bg-stone-200/80 rounded-full text-stone-700">Walk-in</span>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Available Stock</span>
+            <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalUnits">0</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Total units across variants</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">📊</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Low / Out of Stock</span>
+            <div class="text-2xl font-extrabold text-amber-600 mt-1" id="statLowStock">0</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5" id="statOutStockSub">0 sold out</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">⚠️</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Inventory Value</span>
+            <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statInventoryValue">₹0</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">At retail pricing</div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">💰</div>
+        </div>
       </div>
 
-      <div class="relative">
-        <input type="text" id="counterSearchInput" placeholder="Search items..." class="w-full pl-4 pr-4 py-2.5 bg-stone-100 border border-stone-200 rounded-2xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-400 transition" />
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div class="relative flex-1">
+            <input type="text" id="adminSearchInput" placeholder="Search SKU, name, size, category, description..." class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+          </div>
+          <div class="flex items-center flex-wrap gap-2">
+            <button id="btnOpenAddSku" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
+              + Add SKU
+            </button>
+            <button id="btnOpenExcelModal" class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-xs sm:text-sm transition">
+              Excel Sync
+            </button>
+            <button id="btnShareStore" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition">
+              Share Link
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
+          <div class="flex items-center space-x-1.5 overflow-x-auto pb-1">
+            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-900 text-white transition" data-filter="all">All (<span id="filterCountAll">0</span>)</button>
+            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="in_stock">In Stock (<span id="filterCountInStock">0</span>)</button>
+            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="low_stock">Low Stock (&le;5) (<span id="filterCountLowStock">0</span>)</button>
+            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="out_of_stock">Sold Out (<span id="filterCountOutStock">0</span>)</button>
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="filterCategorySelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none">
+              <option value="">All Categories</option>
+            </select>
+            <select id="sortSkuSelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none">
+              <option value="name_asc">Name: A to Z</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
+              <option value="stock_low">Stock: Lowest First</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs font-semibold" id="counterCategoryChips"></div>
-      <div id="counterItemsList" class="bg-[#fcfbfa] border border-stone-200/80 rounded-2xl divide-y divide-stone-100 shadow-sm overflow-hidden"></div>
-
-      <div class="sticky bottom-4 inset-x-0 pt-2 z-20">
-        <button id="btnProceedCounterCheckout" disabled class="w-full py-3.5 px-4 rounded-2xl bg-[#e5dfd3] text-stone-400 font-bold text-sm shadow-md transition flex items-center justify-center space-x-2">
-          <span>Add something to start</span>
-        </button>
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+                <th class="py-3 px-4">Product & Spec</th>
+                <th class="py-3 px-3">SKU Code</th>
+                <th class="py-3 px-3">Category</th>
+                <th class="py-3 px-3">Size</th>
+                <th class="py-3 px-3">Price</th>
+                <th class="py-3 px-4 text-center">Stock</th>
+                <th class="py-3 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div id="viewCustomer" class="hidden space-y-4">
-      <div class="bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-3xl p-6 shadow-md">
-        <div class="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-1">WhatsApp Storefront</div>
-        <h2 class="text-2xl font-extrabold" id="customerStoreName">Sri Lakshman Traders</h2>
-        <p class="text-xs text-stone-300 mt-1">Multi-size stock options & instant WhatsApp ordering.</p>
+    <div id="viewCustomer" class="hidden space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 to-whatsapp-deep rounded-3xl p-6 text-white shadow-xl">
+        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-whatsapp-light/20 text-whatsapp-light">WhatsApp Storefront</span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold mt-2" id="customerStoreTitle">Storefront</h1>
+        <p class="text-slate-300 text-xs sm:text-sm mt-1" id="customerStoreTagline">Live online catalog with instant WhatsApp order generation.</p>
       </div>
-      <div id="customerGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      <div id="customerProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      
+      <div id="floatingCartBar" class="hidden fixed bottom-6 inset-x-4 max-w-xl mx-auto z-30">
+        <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-300"><span id="cartTotalItemsCount">0</span> items</div>
+            <div class="text-base font-extrabold text-white" id="cartSubtotalAmount">₹0</div>
+          </div>
+          <button id="btnOpenCartDrawer" class="px-5 py-2.5 rounded-xl bg-whatsapp-light hover:bg-whatsapp-dark text-white font-bold text-sm shadow transition">
+            View Order & Checkout
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div id="viewSales" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-bold text-stone-900">Recorded Counter Sales</h2>
-        <button id="btnClearSalesLog" class="text-xs text-red-600 hover:underline font-semibold">Clear log</button>
+    <div id="viewOrders" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Received WhatsApp Orders</h2>
+          <p class="text-xs text-slate-500">History of dispatch messages.</p>
+        </div>
+        <button id="btnClearOrdersLog" class="px-3 py-1.5 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold border border-red-200 transition">Clear History</button>
       </div>
-      <div id="salesListContainer" class="bg-[#fcfbfa] border border-stone-200 rounded-2xl divide-y divide-stone-100 shadow-sm"></div>
+      <div id="ordersListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100"></div>
     </div>
   </main>
 
-  <div id="modalProduct" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-[#fbf9f5] rounded-3xl max-w-lg w-full border border-stone-200 shadow-2xl p-5 space-y-4 my-8">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
-        <h3 class="text-base font-extrabold text-stone-900" id="modalProductTitle">Add Product</h3>
-        <button id="btnCloseProductModal" class="p-1 rounded-lg text-stone-400 hover:text-stone-700">✕</button>
+  <div id="cartDrawerBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"></div>
+  <div id="cartDrawer" class="fixed inset-y-0 right-0 z-50 max-w-md w-full bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-200 ease-in-out">
+    <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+      <h3 class="text-base font-bold text-slate-900">Order Summary</h3>
+      <button id="btnCloseCartDrawer" class="p-1 text-slate-400 hover:text-slate-600 text-lg">✕</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 space-y-3" id="cartDrawerItems"></div>
+    <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <input type="text" id="buyerNameInput" placeholder="Your Name *" class="p-2 border border-slate-300 rounded-xl bg-white" />
+        <input type="tel" id="buyerPhoneInput" placeholder="Phone *" class="p-2 border border-slate-300 rounded-xl bg-white" />
       </div>
-      <form id="productForm" class="space-y-3.5">
-        <input type="hidden" id="editProductId" value="" />
-        <div>
-          <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Product Name *</label>
-          <input type="text" id="inputProdName" required placeholder="e.g. Alps Flaxseed Gel" class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600" />
-        </div>
+      <textarea id="buyerAddressInput" rows="2" placeholder="Delivery Address / Notes..." class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs"></textarea>
+      <div class="flex justify-between text-sm font-extrabold text-slate-900 pt-1 border-t border-slate-200">
+        <span>Total Payable:</span>
+        <span id="drawerTotalAmount">₹0</span>
+      </div>
+      <button id="btnSendWhatsAppOrder" class="w-full py-3 rounded-2xl bg-whatsapp-light hover:bg-whatsapp-dark text-white font-extrabold text-sm shadow transition">
+        Send Order on WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <div id="modalShare" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 space-y-4 text-center">
+      <div class="w-12 h-12 mx-auto rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xl">📱</div>
+      <div>
+        <h3 class="text-lg font-extrabold text-slate-900">Your OrderPage Link</h3>
+        <p class="text-xs text-slate-500 mt-1">Share this with your buyers or display on your counter.</p>
+      </div>
+
+      <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl inline-block mx-auto">
+        <img
+          id="shareQrImage"
+          src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https%3A%2F%2Fraghuveerbhatcoder.github.io%2Forderpage%2F"
+          alt="OrderPage QR Code"
+          class="w-40 h-40 mx-auto rounded-lg"
+        />
+      </div>
+
+      <span class="text-[10px] font-mono text-slate-500 block">Scan to browse catalog & order</span>
+
+      <div class="flex items-center space-x-2">
+        <input 
+          type="text" 
+          readonly 
+          id="shareLinkInput" 
+          value="https://raghuveerbhatcoder.github.io/orderpage/" 
+          class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 focus:outline-none"
+        />
+        <button id="btnCopyShareLink" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">Copy</button>
+      </div>
+
+      <button id="btnCloseShareModal" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Close</button>
+    </div>
+  </div>
+
+  <div id="modalSku" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-900" id="modalSkuTitle">Add Product SKU</h3>
+        <button id="btnCloseSkuModal" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <form id="skuForm" class="space-y-3 text-xs">
+        <input type="hidden" id="skuEditId" value="" />
         <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Category / Brand</label>
-            <input type="text" id="inputProdCategory" placeholder="e.g. Alps, Aqualogica" class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Emoji</label>
-            <input type="text" id="inputProdEmoji" placeholder="🛍️" maxlength="4" class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" />
-          </div>
+          <input type="text" id="skuInputCode" placeholder="SKU Code *" required class="p-2 border rounded-xl" />
+          <input type="text" id="skuInputCategory" placeholder="Category *" required class="p-2 border rounded-xl" />
         </div>
-
-        <div class="border border-stone-200 bg-white/70 rounded-2xl p-3 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-extrabold text-stone-800 uppercase">Sizes / Options</span>
-            <button type="button" id="btnAddOptionRow" class="text-xs font-bold text-emerald-700 hover:text-emerald-800">+ Add option</button>
-          </div>
-          <p class="text-[11px] text-stone-500">Each size has its own stock count and price.</p>
-          <div id="variantsContainer" class="space-y-2"></div>
+        <input type="text" id="skuInputName" placeholder="Product Name *" required class="w-full p-2 border rounded-xl" />
+        <div class="grid grid-cols-3 gap-2">
+          <input type="text" id="skuInputSize" placeholder="Size / Spec *" required class="p-2 border rounded-xl" />
+          <input type="number" id="skuInputPrice" placeholder="Selling Price *" required class="p-2 border rounded-xl" />
+          <input type="number" id="skuInputStock" placeholder="Stock Available *" required class="p-2 border rounded-xl" />
         </div>
-
-        <div class="pt-2 flex items-center justify-end space-x-2">
-          <button type="button" id="btnCancelProductModal" class="px-4 py-2 text-xs font-bold text-stone-600 hover:bg-stone-200 rounded-xl">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-xs font-extrabold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow-md">Save Product</button>
+        <div class="flex justify-end space-x-2 pt-2 border-t">
+          <button type="button" id="btnCancelSkuModal" class="px-4 py-2 rounded-xl text-slate-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white font-bold">Save SKU</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div id="modalVariantChooser" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#fbf9f5] rounded-3xl max-w-sm w-full border border-stone-200 shadow-2xl p-5 space-y-3">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-2">
-        <h3 class="text-sm font-extrabold text-stone-900" id="chooserProdTitle">Select Size</h3>
-        <button id="btnCloseChooserModal" class="text-stone-400 hover:text-stone-700">✕</button>
-      </div>
-      <div id="chooserVariantsList" class="space-y-2"></div>
-    </div>
-  </div>
-
-  <div id="counterFinishDrawerBackdrop" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm"></div>
-  <div id="counterFinishDrawer" class="fixed inset-y-0 right-0 z-50 max-w-md w-full bg-[#fbf9f5] shadow-2xl flex flex-col transform translate-x-full transition-transform duration-200 ease-in-out">
-    <div class="p-4 border-b border-stone-200 flex items-center justify-between bg-white">
-      <div class="flex items-center space-x-2">
-        <button id="btnCloseFinishDrawer" class="p-1 rounded-lg text-stone-600 hover:bg-stone-100">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-        <h3 class="text-base font-extrabold text-stone-900">Finish</h3>
-      </div>
-      <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700">Walk-in</span>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-      <div>
-        <label class="block text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1">Details</label>
-        <input type="text" id="finishOrderNote" placeholder="Order note (e.g. customer name or token)" class="w-full px-3 py-2 bg-white border border-stone-300 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-emerald-600" />
-      </div>
-
-      <div>
-        <label class="block text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1">How it ends</label>
-        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
-          <button id="btnFulfillmentHanded" class="py-2 rounded-xl bg-stone-900 text-white">Handed over</button>
-          <button id="btnFulfillmentToPack" class="py-2 rounded-xl bg-white border border-stone-300 text-stone-700">To pack</button>
-        </div>
-      </div>
-
-      <div class="bg-white border border-stone-200 rounded-2xl p-3 space-y-2">
-        <span class="text-[11px] font-bold text-stone-500 uppercase tracking-wider block">Bill</span>
-        <div id="finishBillItems" class="space-y-1.5 text-xs text-stone-800"></div>
-        <div class="pt-2 border-t border-stone-100 space-y-1.5 text-xs">
-          <div class="flex justify-between items-center text-stone-500">
-            <span>Discount</span>
-            <div class="flex items-center space-x-1">
-              <span>₹</span>
-              <input type="number" id="finishDiscountInput" value="0" min="0" class="w-16 px-1.5 py-0.5 border border-stone-200 rounded text-right font-bold text-stone-800" />
-            </div>
-          </div>
-          <div class="flex justify-between items-center text-stone-500">
-            <span>Round off</span>
-            <input type="checkbox" id="finishRoundOffCheck" class="rounded text-emerald-600" />
-          </div>
-          <div class="flex justify-between items-center text-sm font-extrabold text-stone-900 pt-1 border-t border-stone-100">
-            <span>Total</span>
-            <span id="finishTotalPayable">₹0</span>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1.5">Paid by</label>
-        <div class="grid grid-cols-4 gap-1.5 text-xs font-bold" id="paymentModeBtns">
-          <button class="pay-mode-btn py-2 rounded-xl bg-[#008744] text-white" data-mode="Cash">Cash</button>
-          <button class="pay-mode-btn py-2 rounded-xl bg-white border border-stone-300 text-stone-700" data-mode="UPI">UPI</button>
-          <button class="pay-mode-btn py-2 rounded-xl bg-white border border-stone-300 text-stone-700" data-mode="Split">Split</button>
-          <button class="pay-mode-btn py-2 rounded-xl bg-white border border-stone-300 text-stone-700" data-mode="Later">Later</button>
-        </div>
-        <button class="pay-mode-btn w-full mt-1.5 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 text-xs font-bold" data-mode="Khata">Khata</button>
-      </div>
-    </div>
-
-    <div class="p-4 border-t border-stone-200 bg-white">
-      <button id="btnCompleteCounterOrder" class="w-full py-3.5 rounded-2xl bg-[#008744] hover:bg-[#007038] text-white font-extrabold text-sm shadow-lg transition">
-        Done · paid
-      </button>
-    </div>
-  </div>
-
-  <div id="modalShare" class="hidden fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full border border-stone-200 shadow-2xl p-6 text-center space-y-4">
-      <h3 class="text-base font-extrabold text-stone-900">Your Storefront Link</h3>
-      <div class="p-3 bg-stone-50 border border-stone-200 rounded-2xl inline-block mx-auto">
-        <img id="shareQrImage" src="" alt="QR" class="w-36 h-36 mx-auto rounded-lg" />
-      </div>
-      <input type="text" id="shareLinkInput" readonly class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-mono text-center" />
-      <button id="btnCopyStoreLink" class="w-full py-2 bg-stone-900 text-white rounded-xl text-xs font-bold">Copy Link</button>
-      <button id="btnCloseShareModal" class="w-full py-2 bg-stone-100 text-stone-700 rounded-xl text-xs font-semibold">Close</button>
-    </div>
-  </div>
-
   <script>
-    const INITIAL_CATALOG = [
-      {
-        id: 'p_1',
-        name: 'Alps Flaxseed Gel',
-        category: 'Alps',
-        emoji: '🧴',
-        lowThreshold: 5,
-        variants: [
-          { id: 'v_1', size: '100ml Tube', price: 120, stock: 2 },
-          { id: 'v_2', size: '100ml Bottle', price: 110, stock: 4 }
-        ]
-      },
-      {
-        id: 'p_2',
-        name: 'Detan Facewash 100ml',
-        category: 'Aqualogica',
-        emoji: '🫧',
-        lowThreshold: 5,
-        variants: [{ id: 'v_3', size: '100ml', price: 249, stock: 1 }]
-      },
-      {
-        id: 'p_3',
-        name: 'Alps Rosemary water 200ml',
-        category: 'Alps',
-        emoji: '🌿',
-        lowThreshold: 5,
-        variants: [{ id: 'v_4', size: '200ml', price: 399, stock: 2 }]
-      },
-      {
-        id: 'p_4',
-        name: 'Alps Rosemary Essential oil 10ml',
-        category: 'Alps',
-        emoji: '🌱',
-        lowThreshold: 5,
-        variants: [{ id: 'v_5', size: '10ml', price: 199, stock: 2 }]
-      },
-      {
-        id: 'p_5',
-        name: 'Glow Facewash',
-        category: 'Aqualogica',
-        emoji: '✨',
-        lowThreshold: 5,
-        variants: [{ id: 'v_6', size: '100ml', price: 249, stock: 1 }]
-      },
-      {
-        id: 'p_6',
-        name: 'Axe Dark Temptation 3 In 1 Body-Face & Hair Wash 400 ml',
-        category: 'Axe',
-        emoji: '🚿',
-        lowThreshold: 5,
-        variants: [{ id: 'v_7', size: '400 ml', price: 380, stock: 8 }]
-      }
+    const DEFAULT_CATALOG = [
+      { id: 'sku_1', sku: 'AP-101-S', name: 'Alps Flaxseed Gel', category: 'Alps', size: '100ml Tube', price: 120, stock: 2, emoji: '🧴' },
+      { id: 'sku_2', sku: 'AP-101-M', name: 'Alps Flaxseed Gel', category: 'Alps', size: '100ml Bottle', price: 110, stock: 4, emoji: '🧴' },
+      { id: 'sku_3', sku: 'AQ-201-100', name: 'Detan Facewash', category: 'Aqualogica', size: '100ml', price: 249, stock: 1, emoji: '🫧' },
+      { id: 'sku_4', sku: 'AX-301-400', name: 'Axe Dark Temptation Body Wash', category: 'Axe', size: '400 ml', price: 380, stock: 8, emoji: '🚿' }
     ];
 
-    let state = {
-      products: [],
-      counterCart: {},
-      counterCategory: 'All',
-      counterSearch: '',
-      productSearch: '',
-      productStatusFilter: 'all',
-      salesLog: [],
-      selectedPaymentMode: 'Cash',
-      selectedFulfillment: 'Handed over'
+    let appState = {
+      catalog: [],
+      cart: {},
+      orders: [],
+      filterStatus: 'all',
+      searchQuery: '',
+      categoryFilter: ''
     };
 
-    function saveState() {
-      localStorage.setItem('orderpage_2_products', JSON.stringify(state.products));
-      localStorage.setItem('orderpage_2_sales', JSON.stringify(state.salesLog));
-    }
-
     function loadState() {
-      const p = localStorage.getItem('orderpage_2_products');
-      state.products = p ? JSON.parse(p) : INITIAL_CATALOG;
-      const s = localStorage.getItem('orderpage_2_sales');
-      state.salesLog = s ? JSON.parse(s) : [];
+      const saved = localStorage.getItem('orderpage_catalog_data');
+      appState.catalog = saved ? JSON.parse(saved) : [...DEFAULT_CATALOG];
+      const savedOrd = localStorage.getItem('orderpage_orders_data');
+      appState.orders = savedOrd ? JSON.parse(savedOrd) : [];
     }
 
-    function getProductMeta(prod) {
-      let totalStock = 0;
-      let minPrice = Infinity;
-      prod.variants.forEach(v => {
-        totalStock += Number(v.stock || 0);
-        if (Number(v.price) < minPrice) minPrice = Number(v.price);
-      });
-      return { totalStock, minPrice: minPrice === Infinity ? 0 : minPrice };
+    function saveState() {
+      localStorage.setItem('orderpage_catalog_data', JSON.stringify(appState.catalog));
+      localStorage.setItem('orderpage_orders_data', JSON.stringify(appState.orders));
     }
 
-    function renderProducts() {
-      const container = document.getElementById('productsListContainer');
-      const search = state.productSearch.toLowerCase().trim();
-      const statusFilter = state.productStatusFilter;
+    function renderAdminTable() {
+      const q = appState.searchQuery.toLowerCase().trim();
+      const status = appState.filterStatus;
+      const cat = appState.categoryFilter;
 
-      let totalProductsCount = state.products.length;
-      let totalRestockVariants = 0;
-      let lowCount = 0;
-      let soldOutCount = 0;
-
-      state.products.forEach(p => {
-        const { totalStock } = getProductMeta(p);
-        const threshold = p.lowThreshold || 5;
-        if (totalStock === 0) soldOutCount++;
-        else if (totalStock <= threshold) lowCount++;
-        p.variants.forEach(v => { if (v.stock <= threshold) totalRestockVariants++; });
+      let filtered = appState.catalog.filter(item => {
+        const matchesQuery = item.name.toLowerCase().includes(q) || item.sku.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
+        const matchesCat = !cat || item.category === cat;
+        let matchesStatus = true;
+        if (status === 'in_stock') matchesStatus = item.stock > 0;
+        if (status === 'low_stock') matchesStatus = item.stock > 0 && item.stock <= 5;
+        if (status === 'out_of_stock') matchesStatus = item.stock <= 0;
+        return matchesQuery && matchesCat && matchesStatus;
       });
 
-      document.getElementById('headerProductCountBadge').textContent = `${totalProductsCount} products`;
-      document.getElementById('badgeCountAll').textContent = totalProductsCount;
-      document.getElementById('badgeCountLow').textContent = lowCount;
-      document.getElementById('badgeCountSoldOut').textContent = soldOutCount;
-      document.getElementById('labelRestockCount').textContent = `Restock list · ${totalRestockVariants}`;
+      document.getElementById('statTotalSkus').textContent = appState.catalog.length;
+      document.getElementById('statTotalUnits').textContent = appState.catalog.reduce((a, b) => a + Number(b.stock), 0);
+      document.getElementById('statLowStock').textContent = appState.catalog.filter(i => i.stock <= 5).length;
+      document.getElementById('statInventoryValue').textContent = `₹${appState.catalog.reduce((a, b) => a + (Number(b.stock) * Number(b.price)), 0)}`;
 
-      let filtered = state.products.filter(p => {
-        const meta = getProductMeta(p);
-        const matchSearch = p.name.toLowerCase().includes(search) || (p.category && p.category.toLowerCase().includes(search));
-        let matchStatus = true;
-        if (statusFilter === 'low') matchStatus = meta.totalStock > 0 && meta.totalStock <= (p.lowThreshold || 5);
-        if (statusFilter === 'soldout') matchStatus = meta.totalStock === 0;
-        return matchSearch && matchStatus;
-      });
+      document.getElementById('filterCountAll').textContent = appState.catalog.length;
+      document.getElementById('filterCountInStock').textContent = appState.catalog.filter(i => i.stock > 0).length;
+      document.getElementById('filterCountLowStock').textContent = appState.catalog.filter(i => i.stock > 0 && i.stock <= 5).length;
+      document.getElementById('filterCountOutStock').textContent = appState.catalog.filter(i => i.stock <= 0).length;
 
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-stone-400 text-xs">No products found.</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(p => {
-        const { totalStock, minPrice } = getProductMeta(p);
-        const hasMultiple = p.variants.length > 1;
-        const threshold = p.lowThreshold || 5;
-
-        return `
-          <div class="bg-[#fcfbfa] border border-stone-200/90 rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md transition">
-            ${p.category ? `<div class="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1">${p.category}</div>` : ''}
-            <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <span class="text-stone-300 text-xs">⋮⋮</span>
-                <div>
-                  <h3 class="font-extrabold text-stone-900 text-sm sm:text-base">${p.name}</h3>
-                  <p class="text-xs text-stone-500 font-medium">
-                    ${hasMultiple ? p.variants.map(v => v.size).join(', ') : (p.variants[0]?.size || 'Standard')}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="text-xs sm:text-sm font-extrabold text-stone-900">
-                  ${hasMultiple ? `from ₹${minPrice}` : `₹${p.variants[0]?.price || 0}`}
-                </span>
-                <button class="btn-edit-prod text-stone-400 hover:text-stone-700 p-1" data-id="${p.id}">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                </button>
-              </div>
+      const tbody = document.getElementById('inventoryTableBody');
+      tbody.innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="py-3 px-4 font-bold text-slate-900">${item.emoji || '📦'} ${item.name}</td>
+          <td class="py-3 px-3 font-mono text-xs font-semibold">${item.sku}</td>
+          <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${item.category}</span></td>
+          <td class="py-3 px-3 font-semibold text-slate-700 text-xs">${item.size}</td>
+          <td class="py-3 px-3 font-extrabold text-slate-900">₹${item.price}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
+              <button class="btn-dec-stock w-6 h-6 rounded bg-white text-slate-800 font-bold" data-id="${item.id}">-</button>
+              <span class="w-8 text-center font-bold text-xs">${item.stock}</span>
+              <button class="btn-inc-stock w-6 h-6 rounded bg-white text-slate-800 font-bold" data-id="${item.id}">+</button>
             </div>
-
-            <div class="mt-3 pt-2 border-t border-stone-100 space-y-2">
-              ${p.variants.map(v => {
-                const isLow = v.stock <= threshold;
-                return `
-                  <div class="flex items-center justify-between py-1 px-1 rounded-xl hover:bg-stone-50">
-                    <div class="flex items-center space-x-2">
-                      <span class="w-2 h-2 rounded-full ${v.stock === 0 ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-emerald-500'}"></span>
-                      <div>
-                        ${hasMultiple ? `<span class="text-xs font-bold text-stone-800 block">${v.size}</span>` : ''}
-                        <span class="text-[11px] font-semibold ${isLow ? 'text-amber-700' : 'text-stone-500'}">
-                          ${v.stock === 0 ? 'Sold out' : isLow ? `Running low · ${v.stock} left` : `${v.stock} in stock`}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="flex items-center space-x-1.5 bg-[#f5f1ea] border border-stone-200 rounded-xl p-0.5">
-                      <button class="btn-stock-dec w-7 h-7 rounded-lg bg-white text-stone-800 font-extrabold text-sm flex items-center justify-center hover:bg-stone-100" data-pid="${p.id}" data-vid="${v.id}">-</button>
-                      <span class="w-8 text-center text-xs font-extrabold text-stone-800">${v.stock}</span>
-                      <button class="btn-stock-inc w-7 h-7 rounded-lg bg-white text-stone-800 font-extrabold text-sm flex items-center justify-center hover:bg-stone-100" data-pid="${p.id}" data-vid="${v.id}">+</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      container.querySelectorAll('.btn-stock-inc').forEach(btn => {
-        btn.onclick = () => {
-          const prod = state.products.find(p => p.id === btn.dataset.pid);
-          if (prod) {
-            const v = prod.variants.find(x => x.id === btn.dataset.vid);
-            if (v) { v.stock++; saveState(); renderProducts(); }
-          }
-        };
-      });
-
-      container.querySelectorAll('.btn-stock-dec').forEach(btn => {
-        btn.onclick = () => {
-          const prod = state.products.find(p => p.id === btn.dataset.pid);
-          if (prod) {
-            const v = prod.variants.find(x => x.id === btn.dataset.vid);
-            if (v && v.stock > 0) { v.stock--; saveState(); renderProducts(); }
-          }
-        };
-      });
-
-      container.querySelectorAll('.btn-edit-prod').forEach(btn => {
-        btn.onclick = () => openEditProductModal(btn.dataset.id);
-      });
-    }
-
-    function renderCounterPOS() {
-      const categories = new Set(['All']);
-      state.products.forEach(p => { if (p.category) categories.add(p.category); });
-      
-      const chips = document.getElementById('counterCategoryChips');
-      chips.innerHTML = Array.from(categories).map(cat => `
-        <button class="counter-chip-btn px-3 py-1.5 rounded-full whitespace-nowrap ${state.counterCategory === cat ? 'bg-stone-900 text-white' : 'bg-[#f3efe8] text-stone-700'}" data-cat="${cat}">${cat}</button>
+          </td>
+          <td class="py-3 px-3 text-right">
+            <button class="btn-del-sku text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${item.id}">Delete</button>
+          </td>
+        </tr>
       `).join('');
 
-      chips.querySelectorAll('.counter-chip-btn').forEach(btn => {
-        btn.onclick = () => { state.counterCategory = btn.dataset.cat; renderCounterPOS(); };
-      });
-
-      const search = state.counterSearch.toLowerCase().trim();
-      let list = state.products.filter(p => {
-        return p.name.toLowerCase().includes(search) && (state.counterCategory === 'All' || p.category === state.counterCategory);
-      });
-
-      const listContainer = document.getElementById('counterItemsList');
-      listContainer.innerHTML = list.map(p => {
-        const { totalStock, minPrice } = getProductMeta(p);
-        const hasMultiple = p.variants.length > 1;
-        const singleVid = p.variants[0]?.id;
-        const inCartItem = state.counterCart[singleVid];
-
-        return `
-          <div class="p-3.5 flex items-center justify-between hover:bg-stone-50 transition">
-            <div>
-              <h4 class="font-extrabold text-stone-900 text-sm">${p.name}</h4>
-              <div class="text-xs font-semibold text-stone-500">${hasMultiple ? `from ₹${minPrice}` : `₹${p.variants[0]?.price}`}</div>
-              <div class="text-[11px] font-medium text-stone-400">${totalStock === 0 ? 'Out of stock' : `${totalStock} left`}</div>
-            </div>
-            <div>
-              ${hasMultiple ? `
-                <button class="btn-choose-variant px-4 py-1.5 rounded-xl bg-white border border-stone-300 text-stone-800 text-xs font-bold" data-pid="${p.id}">Choose</button>
-              ` : inCartItem ? `
-                <div class="flex items-center space-x-2 bg-[#f3efe8] p-1 rounded-xl border">
-                  <button class="btn-cart-dec w-6 h-6 rounded bg-white text-xs font-bold" data-vid="${singleVid}">-</button>
-                  <span class="text-xs font-extrabold w-4 text-center">${inCartItem.qty}</span>
-                  <button class="btn-cart-inc w-6 h-6 rounded bg-[#008744] text-white text-xs font-bold" data-vid="${singleVid}">+</button>
-                </div>
-              ` : `
-                <button class="btn-add-single w-8 h-8 rounded-xl bg-[#008744] text-white font-extrabold text-base" data-pid="${p.id}" data-vid="${singleVid}">+</button>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      listContainer.querySelectorAll('.btn-add-single').forEach(b => {
-        b.onclick = () => addToCounterCart(b.dataset.pid, b.dataset.vid);
-      });
-      listContainer.querySelectorAll('.btn-cart-inc').forEach(b => {
-        b.onclick = () => { state.counterCart[b.dataset.vid].qty++; updateCounterBottomBar(); renderCounterPOS(); };
-      });
-      listContainer.querySelectorAll('.btn-cart-dec').forEach(b => {
+      tbody.querySelectorAll('.btn-inc-stock').forEach(b => {
         b.onclick = () => {
-          state.counterCart[b.dataset.vid].qty--;
-          if (state.counterCart[b.dataset.vid].qty <= 0) delete state.counterCart[b.dataset.vid];
-          updateCounterBottomBar();
-          renderCounterPOS();
+          const item = appState.catalog.find(i => i.id === b.dataset.id);
+          if (item) { item.stock++; saveState(); renderAdminTable(); }
         };
       });
-      listContainer.querySelectorAll('.btn-choose-variant').forEach(b => {
-        b.onclick = () => openVariantChooser(b.dataset.pid);
+
+      tbody.querySelectorAll('.btn-dec-stock').forEach(b => {
+        b.onclick = () => {
+          const item = appState.catalog.find(i => i.id === b.dataset.id);
+          if (item && item.stock > 0) { item.stock--; saveState(); renderAdminTable(); }
+        };
       });
 
-      updateCounterBottomBar();
+      tbody.querySelectorAll('.btn-del-sku').forEach(b => {
+        b.onclick = () => {
+          appState.catalog = appState.catalog.filter(i => i.id !== b.dataset.id);
+          saveState();
+          renderAdminTable();
+        };
+      });
     }
 
-    function addToCounterCart(pid, vid) {
-      const prod = state.products.find(p => p.id === pid);
-      const variant = prod?.variants.find(v => v.id === vid);
-      if (!prod || !variant) return;
-      if (!state.counterCart[vid]) state.counterCart[vid] = { product: prod, variant, qty: 1 };
-      else state.counterCart[vid].qty++;
-      updateCounterBottomBar();
-      renderCounterPOS();
-    }
-
-    function openVariantChooser(pid) {
-      const prod = state.products.find(p => p.id === pid);
-      if (!prod) return;
-      document.getElementById('chooserProdTitle').textContent = `Choose size · ${prod.name}`;
-      const listEl = document.getElementById('chooserVariantsList');
-      listEl.innerHTML = prod.variants.map(v => `
-        <div class="p-3 bg-white border border-stone-200 rounded-2xl flex items-center justify-between">
+    function renderCustomerStorefront() {
+      const grid = document.getElementById('customerProductGrid');
+      grid.innerHTML = appState.catalog.map(item => `
+        <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
+          <div class="text-3xl">${item.emoji || '🛍️'}</div>
           <div>
-            <div class="text-xs font-extrabold text-stone-900">${v.size}</div>
-            <div class="text-xs font-semibold text-stone-600">₹${v.price} &bull; <span class="text-stone-400">${v.stock} left</span></div>
+            <h3 class="font-extrabold text-slate-900 text-sm">${item.name}</h3>
+            <span class="text-xs font-bold text-slate-500">Size: ${item.size}</span>
           </div>
-          <button class="btn-pick-v px-3 py-1.5 rounded-xl bg-[#008744] text-white text-xs font-bold" data-pid="${prod.id}" data-vid="${v.id}">
-            Add
-          </button>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <span class="text-base font-extrabold text-slate-900">₹${item.price}</span>
+            <button class="btn-add-cart px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold" data-id="${item.id}">
+              Add to Cart
+            </button>
+          </div>
         </div>
       `).join('');
 
-      listEl.querySelectorAll('.btn-pick-v').forEach(b => {
+      grid.querySelectorAll('.btn-add-cart').forEach(b => {
         b.onclick = () => {
-          addToCounterCart(b.dataset.pid, b.dataset.vid);
-          document.getElementById('modalVariantChooser').classList.add('hidden');
+          const id = b.dataset.id;
+          appState.cart[id] = (appState.cart[id] || 0) + 1;
+          updateCustomerCart();
         };
       });
-      document.getElementById('modalVariantChooser').classList.remove('hidden');
     }
 
-    function updateCounterBottomBar() {
-      const btn = document.getElementById('btnProceedCounterCheckout');
-      const badge = document.getElementById('counterCartBadge');
-      const items = Object.values(state.counterCart);
+    function updateCustomerCart() {
+      const keys = Object.keys(appState.cart);
       let totalQty = 0;
       let totalSum = 0;
-      items.forEach(it => { totalQty += it.qty; totalSum += (it.qty * it.variant.price); });
+      keys.forEach(k => {
+        const item = appState.catalog.find(i => i.id === k);
+        if (item) {
+          totalQty += appState.cart[k];
+          totalSum += (appState.cart[k] * item.price);
+        }
+      });
 
+      const bar = document.getElementById('floatingCartBar');
       if (totalQty > 0) {
-        badge.classList.remove('hidden');
-        badge.textContent = totalQty;
-        btn.disabled = false;
-        btn.className = 'w-full py-3.5 px-4 rounded-2xl bg-[#008744] hover:bg-[#007038] text-white font-extrabold text-sm shadow-md transition flex items-center justify-center space-x-2';
-        btn.innerHTML = `<span>${totalQty} item${totalQty > 1 ? 's' : ''} &bull; ₹${totalSum} Next &gt;</span>`;
+        bar.classList.remove('hidden');
+        document.getElementById('cartTotalItemsCount').textContent = totalQty;
+        document.getElementById('cartSubtotalAmount').textContent = `₹${totalSum}`;
       } else {
-        badge.classList.add('hidden');
-        btn.disabled = true;
-        btn.className = 'w-full py-3.5 px-4 rounded-2xl bg-[#e5dfd3] text-stone-400 font-bold text-sm shadow-md transition flex items-center justify-center space-x-2';
-        btn.innerHTML = `<span>Add something to start</span>`;
+        bar.classList.add('hidden');
       }
-    }
 
-    function openFinishDrawer() {
-      const billContainer = document.getElementById('finishBillItems');
-      billContainer.innerHTML = Object.values(state.counterCart).map(it => `
-        <div class="flex justify-between items-center">
-          <span>&times;${it.qty} ${it.product.name} (${it.variant.size})</span>
-          <span class="font-bold">₹${it.qty * it.variant.price}</span>
-        </div>
-      `).join('');
-      recomputeTotal();
-      document.getElementById('counterFinishDrawerBackdrop').classList.remove('hidden');
-      document.getElementById('counterFinishDrawer').classList.remove('translate-x-full');
-    }
-
-    function recomputeTotal() {
-      let sub = 0;
-      Object.values(state.counterCart).forEach(it => { sub += (it.qty * it.variant.price); });
-      const disc = parseFloat(document.getElementById('finishDiscountInput').value) || 0;
-      let total = Math.max(0, sub - disc);
-      if (document.getElementById('finishRoundOffCheck').checked) total = Math.round(total);
-      document.getElementById('finishTotalPayable').textContent = `₹${total}`;
-      return total;
-    }
-
-    function completeCounterOrder() {
-      const items = Object.values(state.counterCart);
-      if (items.length === 0) return;
-      const total = recomputeTotal();
-      const note = document.getElementById('finishOrderNote').value.trim() || 'Counter Sale';
-
-      items.forEach(it => {
-        const prod = state.products.find(p => p.id === it.product.id);
-        const v = prod?.variants.find(x => x.id === it.variant.id);
-        if (v) v.stock = Math.max(0, v.stock - it.qty);
-      });
-
-      state.salesLog.unshift({
-        id: 'ord_' + Date.now(),
-        date: new Date().toLocaleString(),
-        note,
-        mode: state.selectedPaymentMode,
-        fulfillment: state.selectedFulfillment,
-        items: items.map(i => `${i.qty}x ${i.product.name} (${i.variant.size})`),
-        total
-      });
-
-      state.counterCart = {};
-      saveState();
-      document.getElementById('counterFinishDrawerBackdrop').classList.add('hidden');
-      document.getElementById('counterFinishDrawer').classList.add('translate-x-full');
-      updateCounterBottomBar();
-      renderCounterPOS();
-      renderProducts();
-      renderSalesLog();
-      alert('Order recorded successfully!');
-    }
-
-    function renderCustomerStore() {
-      const grid = document.getElementById('customerGrid');
-      grid.innerHTML = state.products.map(p => {
-        const { minPrice } = getProductMeta(p);
+      const drawer = document.getElementById('cartDrawerItems');
+      drawer.innerHTML = keys.map(k => {
+        const item = appState.catalog.find(i => i.id === k);
         return `
-          <div class="bg-white border border-stone-200 rounded-3xl p-5 shadow-sm space-y-3">
-            <div class="text-3xl">${p.emoji || '🛍️'}</div>
-            <h4 class="font-extrabold text-stone-900">${p.name}</h4>
-            <div class="text-xs font-semibold text-emerald-700">from ₹${minPrice}</div>
-            <div class="space-y-1">
-              ${p.variants.map(v => `
-                <div class="flex items-center justify-between text-xs py-1 border-t border-stone-100">
-                  <span class="text-stone-700">${v.size}</span>
-                  <span class="font-bold text-stone-900">₹${v.price} (${v.stock > 0 ? `${v.stock} in stock` : 'Sold out'})</span>
-                </div>
-              `).join('')}
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <div>
+              <div class="text-xs font-bold text-slate-900">${item.name} (${item.size})</div>
+              <div class="text-[11px] text-slate-500">₹${item.price} &times; ${appState.cart[k]}</div>
             </div>
+            <button class="btn-remove-cart text-red-500 font-bold text-xs" data-id="${k}">✕</button>
           </div>
         `;
       }).join('');
-    }
 
-    function renderSalesLog() {
-      const container = document.getElementById('salesListContainer');
-      if (state.salesLog.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-stone-400 text-xs">No sales recorded yet.</div>`;
-        return;
-      }
-      container.innerHTML = state.salesLog.map(s => `
-        <div class="p-4 flex items-center justify-between">
-          <div>
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-extrabold text-stone-900">${s.note}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">${s.mode}</span>
-              <span class="text-[10px] font-semibold text-stone-400">${s.date}</span>
-            </div>
-            <p class="text-xs text-stone-500 mt-1">${s.items.join(', ')}</p>
-          </div>
-          <div class="text-base font-extrabold text-stone-900">₹${s.total}</div>
-        </div>
-      `).join('');
-    }
+      document.getElementById('drawerTotalAmount').textContent = `₹${totalSum}`;
 
-    function createVariantRowHtml(v = { size: '', price: '', stock: '' }) {
-      return `
-        <div class="variant-row grid grid-cols-12 gap-1.5 items-center">
-          <input type="text" placeholder="Size (e.g. 100ml)" value="${v.size || ''}" class="col-span-5 px-2.5 py-1.5 border rounded-lg text-xs font-semibold" required />
-          <input type="number" placeholder="Price" value="${v.price || ''}" class="col-span-3 px-2 py-1.5 border rounded-lg text-xs font-semibold" required />
-          <input type="number" placeholder="Stock" value="${v.stock ?? ''}" class="col-span-3 px-2 py-1.5 border rounded-lg text-xs font-semibold" required />
-          <button type="button" class="btn-remove-v col-span-1 text-stone-400 hover:text-red-600 font-bold">✕</button>
-        </div>
-      `;
-    }
-
-    function openAddProductModal() {
-      document.getElementById('modalProductTitle').textContent = 'Add Product';
-      document.getElementById('editProductId').value = '';
-      document.getElementById('inputProdName').value = '';
-      document.getElementById('inputProdCategory').value = '';
-      const c = document.getElementById('variantsContainer');
-      c.innerHTML = createVariantRowHtml({ size: 'Standard', price: '', stock: '' });
-      bindVariantRemove();
-      document.getElementById('modalProduct').classList.remove('hidden');
-    }
-
-    function openEditProductModal(id) {
-      const prod = state.products.find(p => p.id === id);
-      if (!prod) return;
-      document.getElementById('modalProductTitle').textContent = 'Edit Product';
-      document.getElementById('editProductId').value = prod.id;
-      document.getElementById('inputProdName').value = prod.name;
-      document.getElementById('inputProdCategory').value = prod.category || '';
-      const c = document.getElementById('variantsContainer');
-      c.innerHTML = prod.variants.map(v => createVariantRowHtml(v)).join('');
-      bindVariantRemove();
-      document.getElementById('modalProduct').classList.remove('hidden');
-    }
-
-    function bindVariantRemove() {
-      document.querySelectorAll('.btn-remove-v').forEach(b => {
-        b.onclick = (e) => {
-          if (document.querySelectorAll('.variant-row').length > 1) e.target.closest('.variant-row').remove();
-          else alert('Must have at least one size.');
+      drawer.querySelectorAll('.btn-remove-cart').forEach(b => {
+        b.onclick = () => {
+          delete appState.cart[b.dataset.id];
+          updateCustomerCart();
         };
       });
     }
@@ -772,93 +487,89 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
-      const tabs = [
-        { btn: 'navProductsBtn', view: 'viewProducts', action: renderProducts },
-        { btn: 'navCounterBtn', view: 'viewCounter', action: renderCounterPOS },
-        { btn: 'navCustomerBtn', view: 'viewCustomer', action: renderCustomerStore },
-        { btn: 'navSalesBtn', view: 'viewSales', action: renderSalesLog }
-      ];
+      document.getElementById('navAdminBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.remove('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewOrders').classList.add('hidden');
+        renderAdminTable();
+      };
 
-      tabs.forEach(tab => {
-        document.getElementById(tab.btn).onclick = () => {
-          tabs.forEach(t => {
-            document.getElementById(t.view).classList.add('hidden');
-            document.getElementById(t.btn).classList.remove('bg-white', 'text-stone-900', 'shadow-sm');
-            document.getElementById(t.btn).classList.add('text-stone-600');
-          });
-          document.getElementById(tab.view).classList.remove('hidden');
-          document.getElementById(tab.btn).classList.add('bg-white', 'text-stone-900', 'shadow-sm');
-          document.getElementById(tab.btn).classList.remove('text-stone-600');
-          tab.action();
-        };
-      });
+      document.getElementById('navCustomerBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.remove('hidden');
+        document.getElementById('viewOrders').classList.add('hidden');
+        renderCustomerStorefront();
+      };
 
-      document.getElementById('btnCounterBackToProducts').onclick = () => document.getElementById('navProductsBtn').click();
-      document.getElementById('productSearchInput').oninput = (e) => { state.productSearch = e.target.value; renderProducts(); };
-      document.getElementById('counterSearchInput').oninput = (e) => { state.counterSearch = e.target.value; renderCounterPOS(); };
+      document.getElementById('navOrdersBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewOrders').classList.remove('hidden');
+      };
 
-      document.querySelectorAll('.filter-tab-btn').forEach(btn => {
+      document.getElementById('adminSearchInput').oninput = (e) => {
+        appState.searchQuery = e.target.value;
+        renderAdminTable();
+      };
+
+      document.querySelectorAll('.filter-stock-btn').forEach(btn => {
         btn.onclick = () => {
-          document.querySelectorAll('.filter-tab-btn').forEach(b => b.className = 'filter-tab-btn px-4 py-1.5 rounded-full bg-[#f3efe8] text-stone-700');
-          btn.className = 'filter-tab-btn px-4 py-1.5 rounded-full bg-stone-900 text-white';
-          state.productStatusFilter = btn.dataset.status;
-          renderProducts();
-        };
-      });
-
-      document.getElementById('btnOpenAddProduct').onclick = openAddProductModal;
-      document.getElementById('btnCloseProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
-      document.getElementById('btnCancelProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
-      document.getElementById('btnAddOptionRow').onclick = () => {
-        document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', createVariantRowHtml());
-        bindVariantRemove();
-      };
-
-      document.getElementById('productForm').onsubmit = (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('editProductId').value;
-        const name = document.getElementById('inputProdName').value.trim();
-        const category = document.getElementById('inputProdCategory').value.trim();
-        const variants = [];
-        document.querySelectorAll('.variant-row').forEach((row, idx) => {
-          const ins = row.querySelectorAll('input');
-          variants.push({
-            id: 'v_' + Date.now() + '_' + idx,
-            size: ins[0].value.trim() || 'Standard',
-            price: parseFloat(ins[1].value) || 0,
-            stock: parseInt(ins[2].value) || 0
+          document.querySelectorAll('.filter-stock-btn').forEach(b => {
+            b.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600';
           });
-        });
-
-        if (editId) {
-          const p = state.products.find(x => x.id === editId);
-          if (p) { p.name = name; p.category = category; p.variants = variants; }
-        } else {
-          state.products.unshift({ id: 'p_' + Date.now(), name, category, emoji: '🛍️', variants });
-        }
-        saveState();
-        document.getElementById('modalProduct').classList.add('hidden');
-        renderProducts();
-      };
-
-      document.getElementById('btnProceedCounterCheckout').onclick = openFinishDrawer;
-      document.getElementById('btnCloseFinishDrawer').onclick = () => {
-        document.getElementById('counterFinishDrawerBackdrop').classList.add('hidden');
-        document.getElementById('counterFinishDrawer').classList.add('translate-x-full');
-      };
-      document.getElementById('finishDiscountInput').oninput = recomputeTotal;
-      document.getElementById('finishRoundOffCheck').onchange = recomputeTotal;
-
-      document.querySelectorAll('.pay-mode-btn').forEach(b => {
-        b.onclick = () => {
-          document.querySelectorAll('.pay-mode-btn').forEach(x => x.className = 'pay-mode-btn py-2 rounded-xl bg-white border border-stone-300 text-stone-700 text-xs font-bold');
-          b.className = 'pay-mode-btn py-2 rounded-xl bg-[#008744] text-white text-xs font-bold';
-          state.selectedPaymentMode = b.dataset.mode;
+          btn.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-900 text-white';
+          appState.filterStatus = btn.dataset.filter;
+          renderAdminTable();
         };
       });
 
-      document.getElementById('btnCompleteCounterOrder').onclick = completeCounterOrder;
-      document.getElementById('btnClearSalesLog').onclick = () => { state.salesLog = []; saveState(); renderSalesLog(); };
+      document.getElementById('btnOpenAddSku').onclick = () => {
+        document.getElementById('modalSku').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
+      document.getElementById('btnCancelSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
+
+      document.getElementById('skuForm').onsubmit = (e) => {
+        e.preventDefault();
+        appState.catalog.unshift({
+          id: 'sku_' + Date.now(),
+          sku: document.getElementById('skuInputCode').value.trim(),
+          category: document.getElementById('skuInputCategory').value.trim(),
+          name: document.getElementById('skuInputName').value.trim(),
+          size: document.getElementById('skuInputSize').value.trim(),
+          price: parseFloat(document.getElementById('skuInputPrice').value) || 0,
+          stock: parseInt(document.getElementById('skuInputStock').value) || 0,
+          emoji: '🛍️'
+        });
+        saveState();
+        document.getElementById('modalSku').classList.add('hidden');
+        renderAdminTable();
+      };
+
+      document.getElementById('btnOpenCartDrawer').onclick = () => {
+        document.getElementById('cartDrawerBackdrop').classList.remove('hidden');
+        document.getElementById('cartDrawer').classList.remove('translate-x-full');
+      };
+      document.getElementById('btnCloseCartDrawer').onclick = () => {
+        document.getElementById('cartDrawerBackdrop').classList.add('hidden');
+        document.getElementById('cartDrawer').classList.add('translate-x-full');
+      };
+
+      document.getElementById('btnSendWhatsAppOrder').onclick = () => {
+        const name = document.getElementById('buyerNameInput').value.trim();
+        const phone = document.getElementById('buyerPhoneInput').value.trim();
+        if (!name || !phone) { alert('Please provide your name and phone number'); return; }
+        
+        let msg = `*New Order - Sri Lakshman Traders*\nCustomer: ${name} (${phone})\n`;
+        Object.keys(appState.cart).forEach(id => {
+          const it = appState.catalog.find(x => x.id === id);
+          if (it) msg += `- ${it.name} (${it.size}) x ${appState.cart[id]} = ₹${it.price * appState.cart[id]}\n`;
+        });
+        window.open(`https://wa.me/919876543210?text=${encodeURIComponent(msg)}`, '_blank');
+        appState.cart = {};
+        updateCustomerCart();
+        document.getElementById('btnCloseCartDrawer').click();
+      };
 
       document.getElementById('btnShareStore').onclick = () => {
         const liveUrl = (window.location.protocol.startsWith('http')) 
@@ -869,15 +580,14 @@
         document.getElementById('modalShare').classList.remove('hidden');
       };
       document.getElementById('btnCloseShareModal').onclick = () => document.getElementById('modalShare').classList.add('hidden');
-      document.getElementById('btnCopyStoreLink').onclick = () => {
+      document.getElementById('btnCopyShareLink').onclick = () => {
         const el = document.getElementById('shareLinkInput');
         el.select();
         document.execCommand('copy');
         alert('Copied to clipboard!');
       };
-      document.getElementById('btnCloseChooserModal').onclick = () => document.getElementById('modalVariantChooser').classList.add('hidden');
 
-      renderProducts();
+      renderAdminTable();
     });
   </script>
 </body>
