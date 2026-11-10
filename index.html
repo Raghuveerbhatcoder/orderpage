@@ -587,7 +587,22 @@
                 <div>
                   <div class="font-extrabold text-slate-900 flex items-center space-x-1.5">
                     <span>${prod.name}</span>
-                    ${hasMultiple ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-stone-200 text-stone-700">${prod.variants.length} sizes ${isExpanded ? '▲' : '▼'}</span>` : ''} </div> <div class="text-[11px] text-slate-500 font-semibold"> ${hasMultiple ? prod.variants.map(v => v.size).join(', ') : (prod.variants[0]?.size \vert{}\vert{} 'Standard')} </div> </div> </div> </td> <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-600"> ${hasMultiple ? '<span class="text-slate-400 italic">Multi-SKU</span>' : (prod.variants[0]?.sku \vert{}\vert{} '-')} </td> <td class="py-3 px-3"> <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${prod.category \vert{}\vert{} 'General'}</span> </td> <td class="py-3 px-3 text-xs font-bold text-slate-800"> ${hasMultiple ? `${prod.variants.length} Variants` : (prod.variants[0]?.size || 'Standard')}
+                    ${hasMultiple ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-stone-200 text-stone-700">${prod.variants.length} sizes ${isExpanded ? '▲' : '▼'}</span>` : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-500 font-semibold">
+                    ${hasMultiple ? prod.variants.map(v => v.size).join(', ') : (prod.variants[0]?.size || 'Standard')}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-600">
+              ${hasMultiple ? '<span class="text-slate-400 italic">Multi-SKU</span>' : (prod.variants[0]?.sku || '-')}
+            </td>
+            <td class="py-3 px-3">
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${prod.category || 'General'}</span>
+            </td>
+            <td class="py-3 px-3 text-xs font-bold text-slate-800">
+              ${hasMultiple ? `${prod.variants.length} Variants` : (prod.variants[0]?.size || 'Standard')}
             </td>
             <td class="py-3 px-3 font-extrabold text-slate-900">
               ${hasMultiple ? `from ₹${meta.minPrice}` : `₹${prod.variants[0]?.price || 0}`}
@@ -668,4 +683,599 @@
       });
 
       // Increment / Decrement Stock
-      tbody.querySelectorAll('.btn-inc-v').forEach
+      tbody.querySelectorAll('.btn-inc-v').forEach(b => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          const prod = appState.products.find(p => p.id === b.dataset.pid);
+          const v = prod?.variants.find(x => x.id === b.dataset.vid);
+          if (v) { v.stock = Number(v.stock || 0) + 1; saveState(); renderAdminTable(); }
+        };
+      });
+
+      tbody.querySelectorAll('.btn-dec-v').forEach(b => {
+        e = window.event || e;
+        e?.stopPropagation();
+        b.onclick = (ev) => {
+          ev.stopPropagation();
+          const prod = appState.products.find(p => p.id === b.dataset.pid);
+          const v = prod?.variants.find(x => x.id === b.dataset.vid);
+          if (v && Number(v.stock) > 0) { v.stock = Number(v.stock) - 1; saveState(); renderAdminTable(); }
+        };
+      });
+
+      // Edit Product
+      tbody.querySelectorAll('.btn-edit-prod').forEach(b => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          openEditProductModal(b.dataset.id);
+        };
+      });
+
+      // Delete Product
+      tbody.querySelectorAll('.btn-del-prod').forEach(b => {
+        b.onclick = (e) => {
+          e.stopPropagation();
+          if (confirm('Delete this product and all its variants?')) {
+            appState.products = appState.products.filter(p => p.id !== b.dataset.id);
+            saveState();
+            renderAdminTable();
+          }
+        };
+      });
+    }
+
+    // 2. CUSTOMER VIEW: STRICTLY IN-STOCK ONLY
+    function renderCustomerStorefront() {
+      const q = appState.customerSearch.toLowerCase().trim();
+
+      // Filter products having at least 1 in-stock variant
+      let availableItems = [];
+      appState.products.forEach(p => {
+        const inStockVariants = p.variants.filter(v => Number(v.stock) > 0);
+        if (inStockVariants.length > 0) {
+          const match = p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q));
+          if (match) {
+            availableItems.push({
+              ...p,
+              variants: inStockVariants
+            });
+          }
+        }
+      });
+
+      const grid = document.getElementById('customerProductGrid');
+      const empty = document.getElementById('customerEmptyState');
+      document.getElementById('customerInStockCounter').textContent = `${availableItems.length} products available`;
+
+      if (availableItems.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.innerHTML = availableItems.map(p => {
+        const { minPrice } = getProductMeta(p);
+        return `
+          <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-3xl">${p.emoji || '🛍️'}</span>
+                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  In Stock
+                </span>
+              </div>
+              <div class="mt-3">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${p.category || 'General'}</span>
+                <h3 class="font-extrabold text-slate-900 text-base leading-tight mt-0.5">${p.name}</h3>
+              </div>
+            </div>
+
+            <!-- List Available Sizes -->
+            <div class="space-y-2 border-t border-slate-100 pt-3">
+              ${p.variants.map(v => {
+                const inCart = appState.cart[v.id] || 0;
+                return `
+                  <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl text-xs">
+                    <div>
+                      <span class="font-extrabold text-slate-800 block">${v.size}</span>
+                      <span class="text-emerald-700 font-extrabold">₹${v.price} &bull; <span class="text-slate-400 font-medium">${v.stock} left</span></span>
+                    </div>
+                    <div>
+                      ${inCart > 0 ? `
+                        <div class="flex items-center space-x-1.5 bg-whatsapp-light text-white rounded-lg p-0.5">
+                          <button class="btn-cart-dec w-6 h-6 rounded bg-black/10 font-bold" data-vid="${v.id}">-</button>
+                          <span class="text-xs font-bold px-1.5">${inCart}</span>
+                          <button class="btn-cart-inc w-6 h-6 rounded bg-black/10 font-bold" data-vid="${v.id}">+</button>
+                        </div>
+                      ` : `
+                        <button class="btn-add-variant px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-whatsapp-dark text-white font-bold transition shadow-sm" data-vid="${v.id}">
+                          + Add
+                        </button>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('.btn-add-variant').forEach(b => {
+        b.onclick = () => {
+          const vid = b.dataset.vid;
+          appState.cart[vid] = 1;
+          updateCustomerCart();
+          renderCustomerStorefront();
+        };
+      });
+
+      grid.querySelectorAll('.btn-cart-inc').forEach(b => {
+        b.onclick = () => {
+          const vid = b.dataset.vid;
+          // check stock limit
+          let maxStock = 0;
+          appState.products.forEach(p => {
+            const found = p.variants.find(v => v.id === vid);
+            if (found) maxStock = found.stock;
+          });
+          if (appState.cart[vid] < maxStock) {
+            appState.cart[vid]++;
+            updateCustomerCart();
+            renderCustomerStorefront();
+          } else {
+            alert(`Only ${maxStock} units available in stock!`);
+          }
+        };
+      });
+
+      grid.querySelectorAll('.btn-cart-dec').forEach(b => {
+        b.onclick = () => {
+          const vid = b.dataset.vid;
+          appState.cart[vid]--;
+          if (appState.cart[vid] <= 0) delete appState.cart[vid];
+          updateCustomerCart();
+          renderCustomerStorefront();
+        };
+      });
+    }
+
+    function updateCustomerCart() {
+      const vids = Object.keys(appState.cart);
+      let totalQty = 0;
+      let totalSum = 0;
+
+      vids.forEach(vid => {
+        appState.products.forEach(p => {
+          const v = p.variants.find(x => x.id === vid);
+          if (v) {
+            totalQty += appState.cart[vid];
+            totalSum += (appState.cart[vid] * Number(v.price));
+          }
+        });
+      });
+
+      const bar = document.getElementById('floatingCartBar');
+      const badge = document.getElementById('headerCartCountBadge');
+
+      if (totalQty > 0) {
+        bar.classList.remove('hidden');
+        badge.classList.remove('hidden');
+        badge.textContent = totalQty;
+        document.getElementById('cartTotalItemsCount').textContent = totalQty;
+        document.getElementById('cartSubtotalAmount').textContent = `₹${totalSum.toLocaleString()}`;
+      } else {
+        bar.classList.add('hidden');
+        badge.classList.add('hidden');
+      }
+
+      const drawer = document.getElementById('cartDrawerItems');
+      drawer.innerHTML = vids.map(vid => {
+        let itemInfo = null;
+        appState.products.forEach(p => {
+          const v = p.variants.find(x => x.id === vid);
+          if (v) itemInfo = { name: p.name, size: v.size, price: v.price };
+        });
+        if (!itemInfo) return '';
+
+        return `
+          <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div>
+              <div class="text-xs font-bold text-slate-900">${itemInfo.name} (${itemInfo.size})</div>
+              <div class="text-[11px] text-slate-500 font-semibold">₹${itemInfo.price} &times; ${appState.cart[vid]} = ₹${itemInfo.price * appState.cart[vid]}</div>
+            </div>
+            <button class="btn-remove-cart text-red-500 font-bold text-xs p-1" data-vid="${vid}">✕</button>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('drawerTotalAmount').textContent = `₹${totalSum.toLocaleString()}`;
+      drawer.querySelectorAll('.btn-remove-cart').forEach(b => {
+        b.onclick = () => {
+          delete appState.cart[b.dataset.vid];
+          updateCustomerCart();
+          renderCustomerStorefront();
+        };
+      });
+    }
+
+    // 3. EXCEL / CSV IMPORT ENGINE (HANDLES VARIANTS)
+    function handleExcelUpload(file) {
+      if (!file) return;
+
+      const statusEl = document.getElementById('uploadFileStatus');
+      statusEl.textContent = `Reading ${file.name}...`;
+      statusEl.classList.remove('hidden');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+          if (!json || json.length < 2) {
+            statusEl.textContent = 'Spreadsheet has no data rows.';
+            return;
+          }
+
+          const headers = json[0].map(h => String(h || '').trim());
+          const rows = json.slice(1).filter(r => r && r.length > 0);
+
+          appState.excelHeaders = headers;
+          appState.excelParsedRows = rows;
+          statusEl.textContent = `✓ Loaded ${rows.length} rows from "${file.name}"`;
+
+          const buildOptions = () => '<option value="">-- Ignore --</option>' + headers.map((h, i) => `<option value="${i}">${h}</option>`).join('');
+          ['mapSku', 'mapName', 'mapSize', 'mapPrice', 'mapStock', 'mapCategory'].forEach(id => {
+            document.getElementById(id).innerHTML = buildOptions();
+          });
+
+          // Auto detect headers
+          headers.forEach((h, idx) => {
+            const lower = h.toLowerCase();
+            if (lower.includes('sku') || lower.includes('code')) document.getElementById('mapSku').value = idx;
+            else if (lower.includes('name') || lower.includes('product') || lower.includes('item')) document.getElementById('mapName').value = idx;
+            else if (lower.includes('size') || lower.includes('variant') || lower.includes('spec')) document.getElementById('mapSize').value = idx;
+            else if (lower.includes('price') || lower.includes('rate') || lower.includes('mrp')) document.getElementById('mapPrice').value = idx;
+            else if (lower.includes('stock') || lower.includes('qty') || lower.includes('quantity')) document.getElementById('mapStock').value = idx;
+            else if (lower.includes('cat') || lower.includes('brand')) document.getElementById('mapCategory').value = idx;
+          });
+
+          document.getElementById('detectedRowsCount').textContent = `${rows.length} rows detected`;
+          document.getElementById('mappingSection').classList.remove('hidden');
+        } catch (err) {
+          console.error(err);
+          statusEl.textContent = 'Error parsing spreadsheet file.';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function executeExcelImport() {
+      const rows = appState.excelParsedRows;
+      if (!rows || rows.length === 0) return;
+
+      const idxSku = document.getElementById('mapSku').value;
+      const idxName = document.getElementById('mapName').value;
+      const idxSize = document.getElementById('mapSize').value;
+      const idxPrice = document.getElementById('mapPrice').value;
+      const idxStock = document.getElementById('mapStock').value;
+      const idxCat = document.getElementById('mapCategory').value;
+      const mode = document.querySelector('input[name="importMode"]:checked').value;
+
+      // Group rows by product name into nested variants
+      const productMap = new Map();
+
+      rows.forEach((row, i) => {
+        const name = idxName !== '' ? String(row[idxName] || '').trim() : '';
+        if (!name) return;
+
+        const sku = idxSku !== '' && row[idxSku] ? String(row[idxSku]).trim() : `SKU-${1000 + i}`;
+        const size = idxSize !== '' && row[idxSize] ? String(row[idxSize]).trim() : 'Standard';
+        const price = idxPrice !== '' ? (parseFloat(row[idxPrice]) || 0) : 0;
+        const stock = idxStock !== '' ? (parseInt(row[idxStock]) || 0) : 0;
+        const category = idxCat !== '' && row[idxCat] ? String(row[idxCat]).trim() : 'General';
+
+        const variantObj = {
+          id: 'v_' + Date.now() + '_' + i,
+          sku,
+          size,
+          price,
+          stock: Math.max(0, stock)
+        };
+
+        if (productMap.has(name.toLowerCase())) {
+          productMap.get(name.toLowerCase()).variants.push(variantObj);
+        } else {
+          productMap.set(name.toLowerCase(), {
+            id: 'p_' + Date.now() + '_' + i,
+            name,
+            category,
+            emoji: '📦',
+            variants: [variantObj]
+          });
+        }
+      });
+
+      const importedProducts = Array.from(productMap.values());
+      if (importedProducts.length === 0) {
+        alert('No valid items found. Please verify column selection.');
+        return;
+      }
+
+      if (mode === 'replace') {
+        appState.products = importedProducts;
+      } else {
+        importedProducts.forEach(newP => {
+          const existing = appState.products.find(p => p.name.toLowerCase() === newP.name.toLowerCase());
+          if (existing) {
+            // merge or replace variants
+            existing.variants = newP.variants;
+            existing.category = newP.category || existing.category;
+          } else {
+            appState.products.push(newP);
+          }
+        });
+      }
+
+      saveState();
+      document.getElementById('modalExcel').classList.add('hidden');
+      renderAdminTable();
+      renderCustomerStorefront();
+      alert(`Imported ${importedProducts.length} products with all size variants synced!`);
+    }
+
+    function exportCatalogExcel() {
+      const rows = [];
+      appState.products.forEach(p => {
+        p.variants.forEach(v => {
+          rows.push({
+            'Product Name': p.name,
+            'Category': p.category,
+            'SKU Code': v.sku,
+            'Size / Spec': v.size,
+            'Selling Price': v.price,
+            'Stock Count': v.stock
+          });
+        });
+      });
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
+      XLSX.writeFile(wb, `SriLakshmanTraders_Inventory.xlsx`);
+    }
+
+    function downloadTemplate() {
+      const sample = [
+        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-101-100T', 'Size / Spec': '100ml Tube', 'Selling Price': 120, 'Stock Count': 15 },
+        { 'Product Name': 'Alps Flaxseed Gel', 'Category': 'Alps', 'SKU Code': 'AP-101-100B', 'Size / Spec': '100ml Bottle', 'Selling Price': 110, 'Stock Count': 20 },
+        { 'Product Name': 'Detan Facewash 100ml', 'Category': 'Aqualogica', 'SKU Code': 'AQ-201-100', 'Size / Spec': '100ml', 'Selling Price': 249, 'Stock Count': 12 }
+      ];
+      const ws = XLSX.utils.json_to_sheet(sample);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Template');
+      XLSX.writeFile(wb, 'Nested_Inventory_Template.xlsx');
+    }
+
+    // 4. ADD / EDIT PRODUCT MODAL LOGIC
+    function createVariantRowHtml(v = { sku: '', size: '', price: '', stock: '' }) {
+      return `
+        <div class="variant-input-row grid grid-cols-12 gap-1.5 items-center bg-white p-2 rounded-xl border border-slate-200">
+          <input type="text" placeholder="Size (e.g. 100ml Tube)" value="${v.size || ''}" class="col-span-4 p-1.5 border rounded-lg text-xs font-semibold" required />
+          <input type="text" placeholder="SKU" value="${v.sku || ''}" class="col-span-3 p-1.5 border rounded-lg text-xs font-mono" />
+          <input type="number" placeholder="₹ Price" value="${v.price || ''}" class="col-span-2 p-1.5 border rounded-lg text-xs font-semibold" required />
+          <input type="number" placeholder="Stock" value="${v.stock ?? ''}" class="col-span-2 p-1.5 border rounded-lg text-xs font-semibold" required />
+          <button type="button" class="btn-remove-v-row col-span-1 text-slate-400 hover:text-red-500 font-bold text-center text-sm">✕</button>
+        </div>
+      `;
+    }
+
+    function openAddProductModal() {
+      document.getElementById('modalProductTitle').textContent = 'Add Product';
+      document.getElementById('editProductId').value = '';
+      document.getElementById('inputProdName').value = '';
+      document.getElementById('inputProdCategory').value = '';
+      document.getElementById('inputProdEmoji').value = '🛍️';
+      const c = document.getElementById('variantsContainer');
+      c.innerHTML = createVariantRowHtml({ sku: '', size: 'Standard', price: '', stock: '' });
+      bindVariantRowRemoves();
+      document.getElementById('modalProduct').classList.remove('hidden');
+    }
+
+    function openEditProductModal(id) {
+      const prod = appState.products.find(p => p.id === id);
+      if (!prod) return;
+
+      document.getElementById('modalProductTitle').textContent = 'Edit Product';
+      document.getElementById('editProductId').value = prod.id;
+      document.getElementById('inputProdName').value = prod.name;
+      document.getElementById('inputProdCategory').value = prod.category || '';
+      document.getElementById('inputProdEmoji').value = prod.emoji || '🛍️';
+
+      const c = document.getElementById('variantsContainer');
+      c.innerHTML = prod.variants.map(v => createVariantRowHtml(v)).join('');
+      bindVariantRowRemoves();
+      document.getElementById('modalProduct').classList.remove('hidden');
+    }
+
+    function bindVariantRowRemoves() {
+      document.querySelectorAll('.btn-remove-v-row').forEach(b => {
+        b.onclick = (e) => {
+          if (document.querySelectorAll('.variant-input-row').length > 1) {
+            e.target.closest('.variant-input-row').remove();
+          } else {
+            alert('A product must contain at least one size variant!');
+          }
+        };
+      });
+    }
+
+    // INITIAL SETUP
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+
+      // Navigation
+      document.getElementById('navAdminBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.remove('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewOrders').classList.add('hidden');
+        renderAdminTable();
+      };
+
+      document.getElementById('navCustomerBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.remove('hidden');
+        document.getElementById('viewOrders').classList.add('hidden');
+        renderCustomerStorefront();
+      };
+
+      document.getElementById('navOrdersBtn').onclick = () => {
+        document.getElementById('viewAdmin').classList.add('hidden');
+        document.getElementById('viewCustomer').classList.add('hidden');
+        document.getElementById('viewOrders').classList.remove('hidden');
+      };
+
+      // Filters
+      document.getElementById('adminSearchInput').oninput = (e) => {
+        appState.searchQuery = e.target.value;
+        renderAdminTable();
+      };
+      document.getElementById('customerSearchInput').oninput = (e) => {
+        appState.customerSearch = e.target.value;
+        renderCustomerStorefront();
+      };
+      document.getElementById('filterCategorySelect').onchange = renderAdminTable;
+
+      document.querySelectorAll('.filter-stock-btn').forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll('.filter-stock-btn').forEach(b => b.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600');
+          btn.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-900 text-white';
+          appState.filterStatus = btn.dataset.filter;
+          renderAdminTable();
+        };
+      });
+
+      // Product Modal
+      document.getElementById('btnOpenAddProduct').onclick = openAddProductModal;
+      document.getElementById('btnCloseProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
+      document.getElementById('btnCancelProductModal').onclick = () => document.getElementById('modalProduct').classList.add('hidden');
+      document.getElementById('btnAddOptionRow').onclick = () => {
+        document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', createVariantRowHtml());
+        bindVariantRowRemoves();
+      };
+
+      document.getElementById('productForm').onsubmit = (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editProductId').value;
+        const name = document.getElementById('inputProdName').value.trim();
+        const category = document.getElementById('inputProdCategory').value.trim();
+        const emoji = document.getElementById('inputProdEmoji').value.trim() || '🛍️';
+
+        const variants = [];
+        document.querySelectorAll('.variant-input-row').forEach((row, i) => {
+          const ins = row.querySelectorAll('input');
+          variants.push({
+            id: 'v_' + Date.now() + '_' + i,
+            size: ins[0].value.trim() || 'Standard',
+            sku: ins[1].value.trim() || `SKU-${1000 + i}`,
+            price: parseFloat(ins[2].value) || 0,
+            stock: parseInt(ins[3].value) || 0
+          });
+        });
+
+        if (editId) {
+          const p = appState.products.find(x => x.id === editId);
+          if (p) { p.name = name; p.category = category; p.emoji = emoji; p.variants = variants; }
+        } else {
+          appState.products.unshift({ id: 'p_' + Date.now(), name, category, emoji, variants });
+        }
+
+        saveState();
+        document.getElementById('modalProduct').classList.add('hidden');
+        renderAdminTable();
+        renderCustomerStorefront();
+      };
+
+      // Excel Modal Handlers
+      const openExcel = () => document.getElementById('modalExcel').classList.remove('hidden');
+      document.getElementById('headerImportExcelBtn').onclick = openExcel;
+      document.getElementById('btnTriggerExcelModal').onclick = openExcel;
+      document.getElementById('btnCloseExcelModal').onclick = () => document.getElementById('modalExcel').classList.add('hidden');
+
+      const dropzone = document.getElementById('excelDropzone');
+      const fileInput = document.getElementById('excelFileInput');
+      dropzone.onclick = () => fileInput.click();
+      fileInput.onchange = (e) => { if (e.target.files?.[0]) handleExcelUpload(e.target.files[0]); };
+
+      dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('border-emerald-600', 'bg-emerald-100/40'); };
+      dropzone.ondragleave = () => { dropzone.classList.remove('border-emerald-600', 'bg-emerald-100/40'); };
+      dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-emerald-600', 'bg-emerald-100/40');
+        if (e.dataTransfer.files?.[0]) handleExcelUpload(e.dataTransfer.files[0]);
+      };
+
+      document.getElementById('btnExecuteImport').onclick = executeExcelImport;
+      document.getElementById('btnExportLiveCatalogExcel').onclick = exportCatalogExcel;
+      document.getElementById('btnDownloadSampleTemplate').onclick = downloadTemplate;
+
+      // Cart & Checkout
+      document.getElementById('btnOpenCartDrawer').onclick = () => {
+        document.getElementById('cartDrawerBackdrop').classList.remove('hidden');
+        document.getElementById('cartDrawer').classList.remove('translate-x-full');
+      };
+      document.getElementById('btnCloseCartDrawer').onclick = () => {
+        document.getElementById('cartDrawerBackdrop').classList.add('hidden');
+        document.getElementById('cartDrawer').classList.add('translate-x-full');
+      };
+
+      document.getElementById('btnSendWhatsAppOrder').onclick = () => {
+        const name = document.getElementById('buyerNameInput').value.trim();
+        const phone = document.getElementById('buyerPhoneInput').value.trim();
+        if (!name || !phone) { alert('Please enter your name and phone number'); return; }
+
+        let msg = `*New Order - Sri Lakshman Traders*\nCustomer: ${name} (${phone})\n\n*Ordered Items:*\n`;
+        Object.keys(appState.cart).forEach(vid => {
+          appState.products.forEach(p => {
+            const v = p.variants.find(x => x.id === vid);
+            if (v) {
+              msg += `- ${p.name} (${v.size}) x ${appState.cart[vid]} = ₹${v.price * appState.cart[vid]}\n`;
+              v.stock = Math.max(0, v.stock - appState.cart[vid]);
+            }
+          });
+        });
+
+        saveState();
+        window.open(`https://wa.me/919876543210?text=${encodeURIComponent(msg)}`, '_blank');
+        appState.cart = {};
+        updateCustomerCart();
+        renderAdminTable();
+        renderCustomerStorefront();
+        document.getElementById('btnCloseCartDrawer').click();
+      };
+
+      // Share Link Modal
+      document.getElementById('btnShareStore').onclick = () => {
+        const liveUrl = (window.location.protocol.startsWith('http')) 
+          ? window.location.href.split('#')[0].split('?')[0] 
+          : 'https://raghuveerbhatcoder.github.io/orderpage/';
+        document.getElementById('shareLinkInput').value = liveUrl;
+        document.getElementById('shareQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(liveUrl)}`;
+        document.getElementById('modalShare').classList.remove('hidden');
+      };
+      document.getElementById('btnCloseShareModal').onclick = () => document.getElementById('modalShare').classList.add('hidden');
+      document.getElementById('btnCopyShareLink').onclick = () => {
+        const el = document.getElementById('shareLinkInput');
+        el.select();
+        document.execCommand('copy');
+        alert('Store link copied to clipboard!');
+      };
+
+      renderAdminTable();
+    });
+  </script>
+</body>
+</html>
