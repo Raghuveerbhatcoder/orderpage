@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrderPage Pro - High Capacity Inventory & WhatsApp Catalog</title>
+  <title>Sri Lakshman Traders - Inventory & WhatsApp Catalog</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- SheetJS for Excel & CSV reading/writing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,6 @@
             brand: {
               50: '#ecfdf5',
               100: '#d1fae5',
-              200: '#a7f3d0',
               500: '#10b981',
               600: '#059669',
               700: '#047857',
@@ -43,58 +43,48 @@
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .badge-in-stock { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    .badge-low-stock { background-color: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
-    .badge-out-of-stock { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in { animation: fadeIn 0.18s ease-out forwards; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
+  <!-- Header Navigation -->
   <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm backdrop-blur-md bg-white/95">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-whatsapp-light flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 to-whatsapp-light flex items-center justify-center text-white shadow-md shadow-brand-500/20 text-lg">
+            🛍️
           </div>
           <div>
             <div class="flex items-center space-x-2">
-              <span class="text-lg font-extrabold tracking-tight text-slate-900" id="headerStoreName">OrderPage Pro</span>
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 tracking-wide uppercase">Unlimited SKUs</span>
+              <span class="text-lg font-extrabold tracking-tight text-slate-900">Sri Lakshman Traders</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase">Live Catalog</span>
             </div>
-            <p class="text-xs text-slate-500">Enhanced clone with Excel Sync & Deep Search</p>
+            <p class="text-xs text-slate-500">Retail Inventory & WhatsApp Catalog</p>
           </div>
         </div>
 
         <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold">
-          <button id="navAdminBtn" class="px-3.5 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition-all duration-150 flex items-center space-x-1.5">
+          <button id="navAdminBtn" class="px-3.5 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition flex items-center space-x-1.5">
             <span>Inventory & SKUs</span>
           </button>
-          <button id="navCustomerBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150 flex items-center space-x-1.5">
-            <span>Customer View</span>
+          <button id="navCustomerBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
+            <span>Customer View (In-Stock Only)</span>
             <span id="headerCartCountBadge" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-whatsapp-light text-white font-bold text-[10px]">0</span>
           </button>
-          <button id="navOrdersBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-150 flex items-center space-x-1.5">
+          <button id="navOrdersBtn" class="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center space-x-1.5">
             <span>Orders Log</span>
             <span id="headerOrdersCountBadge" class="ml-1 px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">0</span>
           </button>
         </div>
 
         <div class="flex items-center space-x-2">
-          <button id="headerImportExcelBtn" title="Import from Excel / CSV" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
-            <span>Import Excel</span>
+          <button id="headerImportExcelBtn" title="Import from Excel / CSV" class="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm transition">
+            <span>📊 Import Excel</span>
           </button>
-          <button id="headerSettingsBtn" title="Shop Settings" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition">
+          <button id="btnShareStore" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition" title="Share Store Link">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </button>
         </div>
@@ -102,32 +92,39 @@
     </div>
   </header>
 
+  <!-- Main Content Area -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: ADMIN INVENTORY MANAGER            -->
+    <!-- ========================================== -->
     <div id="viewAdmin" class="space-y-6">
+      
+      <!-- Metrics Strip -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total SKUs</span>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Total Products</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalSkus">0</div>
-            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">High Capacity DB</div>
+            <div class="text-[11px] text-emerald-600 font-medium mt-0.5">Nested Variants Active</div>
           </div>
-          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">📦</div>
+          <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">📦</div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Available Stock</span>
+            <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Units in Stock</span>
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statTotalUnits">0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Total units across variants</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5">Across all sizes</div>
           </div>
-          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">📊</div>
+          <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">📊</div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">Low / Out of Stock</span>
             <div class="text-2xl font-extrabold text-amber-600 mt-1" id="statLowStock">0</div>
-            <div class="text-[11px] text-slate-500 font-medium mt-0.5" id="statOutStockSub">0 sold out</div>
+            <div class="text-[11px] text-slate-500 font-medium mt-0.5" id="statOutStockSub">Hidden from buyers</div>
           </div>
-          <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">⚠️</div>
+          <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">⚠️</div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -135,24 +132,27 @@
             <div class="text-2xl font-extrabold text-slate-900 mt-1" id="statInventoryValue">₹0</div>
             <div class="text-[11px] text-slate-500 font-medium mt-0.5">At retail pricing</div>
           </div>
-          <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">💰</div>
+          <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">₹</div>
         </div>
       </div>
 
+      <!-- Action & Filter Bar -->
       <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div class="relative flex-1">
-            <input type="text" id="adminSearchInput" placeholder="Search SKU, name, size, category, description..." class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+            <input 
+              type="text" 
+              id="adminSearchInput" 
+              placeholder="Search by product name, SKU, size, category..." 
+              class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" 
+            />
           </div>
           <div class="flex items-center flex-wrap gap-2">
-            <button id="btnOpenAddSku" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
-              + Add SKU
+            <button id="btnOpenAddProduct" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition">
+              + Add Product
             </button>
-            <button id="btnOpenExcelModal" class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-xs sm:text-sm transition">
-              Excel Sync
-            </button>
-            <button id="btnShareStore" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition">
-              Share Link
+            <button id="btnTriggerExcelModal" class="px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold text-xs sm:text-sm transition">
+              Excel Import / Export
             </button>
           </div>
         </div>
@@ -162,33 +162,28 @@
             <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-900 text-white transition" data-filter="all">All (<span id="filterCountAll">0</span>)</button>
             <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="in_stock">In Stock (<span id="filterCountInStock">0</span>)</button>
             <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="low_stock">Low Stock (&le;5) (<span id="filterCountLowStock">0</span>)</button>
-            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="out_of_stock">Sold Out (<span id="filterCountOutStock">0</span>)</button>
+            <button class="filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="out_of_stock">Out of Stock (<span id="filterCountOutStock">0</span>)</button>
           </div>
           <div class="flex items-center space-x-2">
             <select id="filterCategorySelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none">
               <option value="">All Categories</option>
             </select>
-            <select id="sortSkuSelect" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none">
-              <option value="name_asc">Name: A to Z</option>
-              <option value="price_low">Price: Low to High</option>
-              <option value="price_high">Price: High to Low</option>
-              <option value="stock_low">Stock: Lowest First</option>
-            </select>
           </div>
         </div>
       </div>
 
+      <!-- Inventory Table with Nested Variant Rows -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs sm:text-sm">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                <th class="py-3 px-4">Product & Spec</th>
-                <th class="py-3 px-3">SKU Code</th>
+                <th class="py-3 px-4">Item & Description</th>
+                <th class="py-3 px-3">SKU</th>
                 <th class="py-3 px-3">Category</th>
-                <th class="py-3 px-3">Size</th>
+                <th class="py-3 px-3">Size / Variants</th>
                 <th class="py-3 px-3">Price</th>
-                <th class="py-3 px-4 text-center">Stock</th>
+                <th class="py-3 px-4 text-center">Available Stock</th>
                 <th class="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -196,45 +191,214 @@
           </table>
         </div>
       </div>
+
     </div>
 
+    <!-- ========================================== -->
+    <!-- VIEW 2: CUSTOMER STOREFRONT (IN-STOCK ONLY)-->
+    <!-- ========================================== -->
     <div id="viewCustomer" class="hidden space-y-6">
-      <div class="bg-gradient-to-r from-slate-900 to-whatsapp-deep rounded-3xl p-6 text-white shadow-xl">
-        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-whatsapp-light/20 text-whatsapp-light">WhatsApp Storefront</span>
-        <h1 class="text-2xl sm:text-3xl font-extrabold mt-2" id="customerStoreTitle">Storefront</h1>
-        <p class="text-slate-300 text-xs sm:text-sm mt-1" id="customerStoreTagline">Live online catalog with instant WhatsApp order generation.</p>
+      
+      <div class="bg-gradient-to-r from-slate-900 to-whatsapp-deep rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-whatsapp-light/20 border border-whatsapp-light/40 text-whatsapp-light text-xs font-semibold mb-3">
+            <span>● Live Available Catalog</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold">Sri Lakshman Traders</h1>
+          <p class="text-slate-300 text-xs sm:text-sm mt-1">
+            Displaying only items currently in stock. Choose your items and tap checkout to send your order on WhatsApp.
+          </p>
+        </div>
       </div>
+
+      <div class="flex items-center justify-between">
+        <input 
+          type="text" 
+          id="customerSearchInput" 
+          placeholder="Search available stock..." 
+          class="w-full max-w-md px-4 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-dark"
+        />
+        <span class="text-xs font-bold text-slate-500" id="customerInStockCounter">0 items available</span>
+      </div>
+
       <div id="customerProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
       
+      <div id="customerEmptyState" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200 p-8">
+        <div class="text-4xl mb-2">📦</div>
+        <h3 class="text-base font-bold text-slate-800">No items available right now</h3>
+        <p class="text-xs text-slate-500 mt-1">All matching products are currently out of stock.</p>
+      </div>
+
+      <!-- Floating Order Bar -->
       <div id="floatingCartBar" class="hidden fixed bottom-6 inset-x-4 max-w-xl mx-auto z-30">
-        <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between">
+        <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-2xl flex items-center justify-between border border-slate-700">
           <div>
-            <div class="text-xs text-slate-300"><span id="cartTotalItemsCount">0</span> items</div>
+            <div class="text-xs text-slate-300"><span id="cartTotalItemsCount">0</span> items in cart</div>
             <div class="text-base font-extrabold text-white" id="cartSubtotalAmount">₹0</div>
           </div>
           <button id="btnOpenCartDrawer" class="px-5 py-2.5 rounded-xl bg-whatsapp-light hover:bg-whatsapp-dark text-white font-bold text-sm shadow transition">
-            View Order & Checkout
+            View Order & WhatsApp
           </button>
         </div>
       </div>
+
     </div>
 
+    <!-- ========================================== -->
+    <!-- VIEW 3: ORDERS LOG                         -->
+    <!-- ========================================== -->
     <div id="viewOrders" class="hidden space-y-6">
       <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
         <div>
-          <h2 class="text-base font-bold text-slate-900">Received WhatsApp Orders</h2>
-          <p class="text-xs text-slate-500">History of dispatch messages.</p>
+          <h2 class="text-base font-bold text-slate-900">Recorded Customer Orders</h2>
+          <p class="text-xs text-slate-500">History of generated WhatsApp dispatches.</p>
         </div>
-        <button id="btnClearOrdersLog" class="px-3 py-1.5 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold border border-red-200 transition">Clear History</button>
+        <button id="btnClearOrdersLog" class="px-3 py-1.5 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold border border-red-200 transition">
+          Clear History
+        </button>
       </div>
       <div id="ordersListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm divide-y divide-slate-100"></div>
     </div>
+
   </main>
 
+  <!-- ========================================== -->
+  <!-- MODAL: ADD / EDIT PRODUCT WITH SIZES       -->
+  <!-- ========================================== -->
+  <div id="modalProduct" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 my-8">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-extrabold text-slate-900 text-base" id="modalProductTitle">Add Product</h3>
+        <button id="btnCloseProductModal" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <form id="productForm" class="space-y-3.5 text-xs">
+        <input type="hidden" id="editProductId" value="" />
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Product Name *</label>
+          <input type="text" id="inputProdName" placeholder="e.g. Alps Flaxseed Gel" required class="w-full p-2.5 border border-slate-300 rounded-xl font-semibold" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Category</label>
+            <input type="text" id="inputProdCategory" placeholder="e.g. Alps, Aqualogica" class="w-full p-2.5 border border-slate-300 rounded-xl" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Emoji</label>
+            <input type="text" id="inputProdEmoji" placeholder="🛍️" maxlength="4" class="w-full p-2.5 border border-slate-300 rounded-xl" />
+          </div>
+        </div>
+
+        <!-- Nested Sizes / Variants Container -->
+        <div class="border border-slate-200 bg-slate-50 p-3.5 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-slate-800 uppercase">Sizes & Variant Rows</span>
+            <button type="button" id="btnAddOptionRow" class="text-emerald-700 font-extrabold hover:text-emerald-800">+ Add Size Option</button>
+          </div>
+          <p class="text-[11px] text-slate-500">Each size option generates its own individual row with separate stock and price.</p>
+          <div id="variantsContainer" class="space-y-2 pt-1"></div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t">
+          <button type="button" id="btnCancelProductModal" class="px-4 py-2 rounded-xl text-slate-600 font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 text-white font-extrabold shadow">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EXCEL IMPORT & EXPORT (WORKING)     -->
+  <!-- ========================================== -->
+  <div id="modalExcel" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden">
+      
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Excel / CSV Spreadsheet Sync</h3>
+          <p class="text-xs text-slate-500">Upload any inventory sheet, invoice, or supplier file</p>
+        </div>
+        <button id="btnCloseExcelModal" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">✕</button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">1. Select your Spreadsheet File</label>
+          <div id="excelDropzone" class="border-2 border-dashed border-emerald-400 hover:border-emerald-600 rounded-2xl p-6 text-center cursor-pointer transition bg-emerald-50/20">
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" />
+            <div class="text-3xl mb-1">📄</div>
+            <p class="text-sm font-bold text-slate-800">Click to choose Excel / CSV file</p>
+            <p class="text-xs text-slate-500 mt-0.5">Supports .xlsx, .xls, and .csv files from Excel or Google Sheets</p>
+            <div id="uploadFileStatus" class="hidden mt-3 p-2 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold"></div>
+          </div>
+        </div>
+
+        <div id="mappingSection" class="hidden space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Verify Column Header Matching</span>
+            <span id="detectedRowsCount" class="text-xs font-bold text-emerald-700"></span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">SKU Code</label>
+              <select id="mapSku" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">Item Name *</label>
+              <select id="mapName" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">Size / Variant</label>
+              <select id="mapSize" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">Price *</label>
+              <select id="mapPrice" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">Stock Count *</label>
+              <select id="mapStock" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+            <div>
+              <label class="block text-slate-600 font-medium mb-1">Category</label>
+              <select id="mapCategory" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-semibold"></select>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center space-x-4 text-xs font-semibold text-slate-700">
+            <label class="flex items-center space-x-1.5 cursor-pointer">
+              <input type="radio" name="importMode" value="append" checked class="text-brand-600" />
+              <span>Update & Add to existing items</span>
+            </label>
+            <label class="flex items-center space-x-1.5 cursor-pointer">
+              <input type="radio" name="importMode" value="replace" class="text-brand-600" />
+              <span class="text-red-600">Replace entire catalog</span>
+            </label>
+          </div>
+
+          <button id="btnExecuteImport" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-sm shadow-md transition">
+            Import & Sync Inventory Now
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+          <button id="btnDownloadSampleTemplate" class="text-xs font-bold text-slate-600 hover:text-slate-900 underline">
+            Download Sample Excel Template (.xlsx)
+          </button>
+          <button id="btnExportLiveCatalogExcel" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">
+            Export Current Inventory (.xlsx)
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
   <div id="cartDrawerBackdrop" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"></div>
   <div id="cartDrawer" class="fixed inset-y-0 right-0 z-50 max-w-md w-full bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-200 ease-in-out">
     <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-      <h3 class="text-base font-bold text-slate-900">Order Summary</h3>
+      <h3 class="text-base font-bold text-slate-900">Your Order Summary</h3>
       <button id="btnCloseCartDrawer" class="p-1 text-slate-400 hover:text-slate-600 text-lg">✕</button>
     </div>
     <div class="flex-1 overflow-y-auto p-4 space-y-3" id="cartDrawerItems"></div>
@@ -254,341 +418,254 @@
     </div>
   </div>
 
+  <!-- Modal: Share Store Link -->
   <div id="modalShare" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-slate-100 p-6 space-y-4 text-center">
-      <div class="w-12 h-12 mx-auto rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xl">📱</div>
-      <div>
-        <h3 class="text-lg font-extrabold text-slate-900">Your OrderPage Link</h3>
-        <p class="text-xs text-slate-500 mt-1">Share this with your buyers or display on your counter.</p>
-      </div>
-
+      <h3 class="text-lg font-extrabold text-slate-900">Your Storefront Link</h3>
       <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl inline-block mx-auto">
-        <img
-          id="shareQrImage"
-          src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https%3A%2F%2Fraghuveerbhatcoder.github.io%2Forderpage%2F"
-          alt="OrderPage QR Code"
-          class="w-40 h-40 mx-auto rounded-lg"
-        />
+        <img id="shareQrImage" src="" alt="QR" class="w-36 h-36 mx-auto rounded-lg" />
       </div>
-
-      <span class="text-[10px] font-mono text-slate-500 block">Scan to browse catalog & order</span>
-
-      <div class="flex items-center space-x-2">
-        <input 
-          type="text" 
-          readonly 
-          id="shareLinkInput" 
-          value="https://raghuveerbhatcoder.github.io/orderpage/" 
-          class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600 focus:outline-none"
-        />
-        <button id="btnCopyShareLink" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">Copy</button>
-      </div>
-
-      <button id="btnCloseShareModal" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">Close</button>
+      <input type="text" id="shareLinkInput" readonly class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-center" />
+      <button id="btnCopyShareLink" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold transition">Copy Link</button>
+      <button id="btnCloseShareModal" class="w-full py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold">Close</button>
     </div>
   </div>
 
-  <div id="modalSku" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-bold text-slate-900" id="modalSkuTitle">Add Product SKU</h3>
-        <button id="btnCloseSkuModal" class="text-slate-400 hover:text-slate-700">✕</button>
-      </div>
-      <form id="skuForm" class="space-y-3 text-xs">
-        <input type="hidden" id="skuEditId" value="" />
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="skuInputCode" placeholder="SKU Code *" required class="p-2 border rounded-xl" />
-          <input type="text" id="skuInputCategory" placeholder="Category *" required class="p-2 border rounded-xl" />
-        </div>
-        <input type="text" id="skuInputName" placeholder="Product Name *" required class="w-full p-2 border rounded-xl" />
-        <div class="grid grid-cols-3 gap-2">
-          <input type="text" id="skuInputSize" placeholder="Size / Spec *" required class="p-2 border rounded-xl" />
-          <input type="number" id="skuInputPrice" placeholder="Selling Price *" required class="p-2 border rounded-xl" />
-          <input type="number" id="skuInputStock" placeholder="Stock Available *" required class="p-2 border rounded-xl" />
-        </div>
-        <div class="flex justify-end space-x-2 pt-2 border-t">
-          <button type="button" id="btnCancelSkuModal" class="px-4 py-2 rounded-xl text-slate-600">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white font-bold">Save SKU</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
+  <!-- SCRIPT LOGIC -->
   <script>
-    const DEFAULT_CATALOG = [
-      { id: 'sku_1', sku: 'AP-101-S', name: 'Alps Flaxseed Gel', category: 'Alps', size: '100ml Tube', price: 120, stock: 2, emoji: '🧴' },
-      { id: 'sku_2', sku: 'AP-101-M', name: 'Alps Flaxseed Gel', category: 'Alps', size: '100ml Bottle', price: 110, stock: 4, emoji: '🧴' },
-      { id: 'sku_3', sku: 'AQ-201-100', name: 'Detan Facewash', category: 'Aqualogica', size: '100ml', price: 249, stock: 1, emoji: '🫧' },
-      { id: 'sku_4', sku: 'AX-301-400', name: 'Axe Dark Temptation Body Wash', category: 'Axe', size: '400 ml', price: 380, stock: 8, emoji: '🚿' }
+    // Initial catalog structured with nested variants
+    const INITIAL_PRODUCTS = [
+      {
+        id: 'p_1',
+        name: 'Alps Flaxseed Gel',
+        category: 'Alps',
+        emoji: '🧴',
+        variants: [
+          { id: 'v_1', sku: 'AP-101-100T', size: '100ml Tube', price: 120, stock: 2 },
+          { id: 'v_2', sku: 'AP-101-100B', size: '100ml Bottle', price: 110, stock: 4 }
+        ]
+      },
+      {
+        id: 'p_2',
+        name: 'Detan Facewash 100ml',
+        category: 'Aqualogica',
+        emoji: '🫧',
+        variants: [
+          { id: 'v_3', sku: 'AQ-201-100', size: '100ml', price: 249, stock: 1 }
+        ]
+      },
+      {
+        id: 'p_3',
+        name: 'Glow Facewash',
+        category: 'Aqualogica',
+        emoji: '✨',
+        variants: [
+          { id: 'v_4', sku: 'AQ-202-100', size: '100ml', price: 249, stock: 0 }
+        ]
+      },
+      {
+        id: 'p_4',
+        name: 'Axe Dark Temptation 3 In 1 Body-Face & Hair Wash 400 ml',
+        category: 'Axe',
+        emoji: '🚿',
+        variants: [
+          { id: 'v_5', sku: 'AX-301-400', size: '400 ml', price: 380, stock: 8 }
+        ]
+      }
     ];
 
     let appState = {
-      catalog: [],
-      cart: {},
+      products: [],
+      cart: {}, // { variantId: qty }
       orders: [],
       filterStatus: 'all',
       searchQuery: '',
-      categoryFilter: ''
+      customerSearch: '',
+      excelParsedRows: [],
+      excelHeaders: [],
+      expandedProductIds: new Set(['p_1']) // Default expand multi-variant product
     };
 
     function loadState() {
-      const saved = localStorage.getItem('orderpage_catalog_data');
-      appState.catalog = saved ? JSON.parse(saved) : [...DEFAULT_CATALOG];
-      const savedOrd = localStorage.getItem('orderpage_orders_data');
+      const saved = localStorage.getItem('sl_traders_nested_catalog');
+      appState.products = saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      const savedOrd = localStorage.getItem('sl_traders_orders');
       appState.orders = savedOrd ? JSON.parse(savedOrd) : [];
     }
 
     function saveState() {
-      localStorage.setItem('orderpage_catalog_data', JSON.stringify(appState.catalog));
-      localStorage.setItem('orderpage_orders_data', JSON.stringify(appState.orders));
+      localStorage.setItem('sl_traders_nested_catalog', JSON.stringify(appState.products));
+      localStorage.setItem('sl_traders_orders', JSON.stringify(appState.orders));
     }
 
+    function getProductMeta(prod) {
+      let totalStock = 0;
+      let minPrice = Infinity;
+      let totalValue = 0;
+      prod.variants.forEach(v => {
+        const s = Number(v.stock || 0);
+        const p = Number(v.price || 0);
+        totalStock += s;
+        totalValue += (s * p);
+        if (p < minPrice) minPrice = p;
+      });
+      return { totalStock, minPrice: minPrice === Infinity ? 0 : minPrice, totalValue };
+    }
+
+    // 1. ADMIN INVENTORY TABLE WITH NESTED VARIANT ROWS
     function renderAdminTable() {
       const q = appState.searchQuery.toLowerCase().trim();
       const status = appState.filterStatus;
-      const cat = appState.categoryFilter;
+      const catSelect = document.getElementById('filterCategorySelect').value;
 
-      let filtered = appState.catalog.filter(item => {
-        const matchesQuery = item.name.toLowerCase().includes(q) || item.sku.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
-        const matchesCat = !cat || item.category === cat;
+      let filtered = appState.products.filter(prod => {
+        const meta = getProductMeta(prod);
+        const matchesQuery = prod.name.toLowerCase().includes(q) || 
+                             (prod.category && prod.category.toLowerCase().includes(q)) ||
+                             prod.variants.some(v => (v.sku && v.sku.toLowerCase().includes(q)) || v.size.toLowerCase().includes(q));
+        const matchesCat = !catSelect || prod.category === catSelect;
+        
         let matchesStatus = true;
-        if (status === 'in_stock') matchesStatus = item.stock > 0;
-        if (status === 'low_stock') matchesStatus = item.stock > 0 && item.stock <= 5;
-        if (status === 'out_of_stock') matchesStatus = item.stock <= 0;
+        if (status === 'in_stock') matchesStatus = meta.totalStock > 0;
+        if (status === 'low_stock') matchesStatus = meta.totalStock > 0 && meta.totalStock <= 5;
+        if (status === 'out_of_stock') matchesStatus = meta.totalStock <= 0;
+
         return matchesQuery && matchesCat && matchesStatus;
       });
 
-      document.getElementById('statTotalSkus').textContent = appState.catalog.length;
-      document.getElementById('statTotalUnits').textContent = appState.catalog.reduce((a, b) => a + Number(b.stock), 0);
-      document.getElementById('statLowStock').textContent = appState.catalog.filter(i => i.stock <= 5).length;
-      document.getElementById('statInventoryValue').textContent = `₹${appState.catalog.reduce((a, b) => a + (Number(b.stock) * Number(b.price)), 0)}`;
+      // Update KPIs
+      let allUnits = 0;
+      let allVal = 0;
+      let lowCount = 0;
+      let outCount = 0;
 
-      document.getElementById('filterCountAll').textContent = appState.catalog.length;
-      document.getElementById('filterCountInStock').textContent = appState.catalog.filter(i => i.stock > 0).length;
-      document.getElementById('filterCountLowStock').textContent = appState.catalog.filter(i => i.stock > 0 && i.stock <= 5).length;
-      document.getElementById('filterCountOutStock').textContent = appState.catalog.filter(i => i.stock <= 0).length;
+      appState.products.forEach(p => {
+        const meta = getProductMeta(p);
+        allUnits += meta.totalStock;
+        allVal += meta.totalValue;
+        if (meta.totalStock === 0) outCount++;
+        else if (meta.totalStock <= 5) lowCount++;
+      });
+
+      document.getElementById('statTotalSkus').textContent = appState.products.length;
+      document.getElementById('statTotalUnits').textContent = allUnits;
+      document.getElementById('statLowStock').textContent = lowCount + outCount;
+      document.getElementById('statOutStockSub').textContent = `${outCount} completely sold out`;
+      document.getElementById('statInventoryValue').textContent = `₹${allVal.toLocaleString()}`;
+
+      document.getElementById('filterCountAll').textContent = appState.products.length;
+      document.getElementById('filterCountInStock').textContent = appState.products.filter(p => getProductMeta(p).totalStock > 0).length;
+      document.getElementById('filterCountLowStock').textContent = appState.products.filter(p => {
+        const s = getProductMeta(p).totalStock;
+        return s > 0 && s <= 5;
+      }).length;
+      document.getElementById('filterCountOutStock').textContent = outCount;
+
+      // Category options
+      const categories = new Set(appState.products.map(p => p.category).filter(Boolean));
+      const catDropdown = document.getElementById('filterCategorySelect');
+      const currentCat = catDropdown.value;
+      catDropdown.innerHTML = '<option value="">All Categories</option>' + Array.from(categories).sort().map(c => `<option value="${c}">${c}</option>`).join('');
+      catDropdown.value = currentCat;
 
       const tbody = document.getElementById('inventoryTableBody');
-      tbody.innerHTML = filtered.map(item => `
-        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-          <td class="py-3 px-4 font-bold text-slate-900">${item.emoji || '📦'} ${item.name}</td>
-          <td class="py-3 px-3 font-mono text-xs font-semibold">${item.sku}</td>
-          <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${item.category}</span></td>
-          <td class="py-3 px-3 font-semibold text-slate-700 text-xs">${item.size}</td>
-          <td class="py-3 px-3 font-extrabold text-slate-900">₹${item.price}</td>
-          <td class="py-3 px-4 text-center">
-            <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
-              <button class="btn-dec-stock w-6 h-6 rounded bg-white text-slate-800 font-bold" data-id="${item.id}">-</button>
-              <span class="w-8 text-center font-bold text-xs">${item.stock}</span>
-              <button class="btn-inc-stock w-6 h-6 rounded bg-white text-slate-800 font-bold" data-id="${item.id}">+</button>
-            </div>
-          </td>
-          <td class="py-3 px-3 text-right">
-            <button class="btn-del-sku text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${item.id}">Delete</button>
-          </td>
-        </tr>
-      `).join('');
+      let html = '';
 
-      tbody.querySelectorAll('.btn-inc-stock').forEach(b => {
-        b.onclick = () => {
-          const item = appState.catalog.find(i => i.id === b.dataset.id);
-          if (item) { item.stock++; saveState(); renderAdminTable(); }
-        };
-      });
+      filtered.forEach(prod => {
+        const meta = getProductMeta(prod);
+        const hasMultiple = prod.variants.length > 1;
+        const isExpanded = appState.expandedProductIds.has(prod.id);
+        const isLow = meta.totalStock > 0 && meta.totalStock <= 5;
+        const isOut = meta.totalStock === 0;
 
-      tbody.querySelectorAll('.btn-dec-stock').forEach(b => {
-        b.onclick = () => {
-          const item = appState.catalog.find(i => i.id === b.dataset.id);
-          if (item && item.stock > 0) { item.stock--; saveState(); renderAdminTable(); }
-        };
-      });
+        // PARENT PRODUCT ROW
+        html += `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100 ${hasMultiple ? 'bg-slate-50/50 cursor-pointer' : ''}" data-prodid="${prod.id}">
+            <td class="py-3 px-4">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-xl">${prod.emoji || '📦'}</span>
+                <div>
+                  <div class="font-extrabold text-slate-900 flex items-center space-x-1.5">
+                    <span>${prod.name}</span>
+                    ${hasMultiple ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-stone-200 text-stone-700">${prod.variants.length} sizes ${isExpanded ? '▲' : '▼'}</span>` : ''} </div> <div class="text-[11px] text-slate-500 font-semibold"> ${hasMultiple ? prod.variants.map(v => v.size).join(', ') : (prod.variants[0]?.size \vert{}\vert{} 'Standard')} </div> </div> </div> </td> <td class="py-3 px-3 font-mono text-xs font-semibold text-slate-600"> ${hasMultiple ? '<span class="text-slate-400 italic">Multi-SKU</span>' : (prod.variants[0]?.sku \vert{}\vert{} '-')} </td> <td class="py-3 px-3"> <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">${prod.category \vert{}\vert{} 'General'}</span> </td> <td class="py-3 px-3 text-xs font-bold text-slate-800"> ${hasMultiple ? `${prod.variants.length} Variants` : (prod.variants[0]?.size || 'Standard')}
+            </td>
+            <td class="py-3 px-3 font-extrabold text-slate-900">
+              ${hasMultiple ? `from ₹${meta.minPrice}` : `₹${prod.variants[0]?.price || 0}`}
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${!hasMultiple ? `
+                <div class="inline-flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
+                  <button class="btn-dec-v w-6 h-6 rounded bg-white text-slate-800 font-bold" data-pid="${prod.id}" data-vid="${prod.variants[0]?.id}">-</button>
+                  <span class="w-8 text-center font-bold text-xs">${meta.totalStock}</span>
+                  <button class="btn-inc-v w-6 h-6 rounded bg-white text-slate-800 font-bold" data-pid="${prod.id}" data-vid="${prod.variants[0]?.id}">+</button>
+                </div>
+              ` : `
+                <span class="inline-block px-2.5 py-1 rounded-xl bg-slate-200/80 font-bold text-xs text-slate-800">
+                  ${meta.totalStock} units total
+                </span>
+              `}
+              <span class="block text-[10px] font-bold mt-0.5 ${isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-emerald-600'}">
+                ${isOut ? 'Hidden from buyers' : isLow ? 'Running low' : 'Active'}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-right">
+              <button class="btn-edit-prod text-slate-600 hover:text-slate-900 p-1 text-xs font-bold mr-1" data-id="${prod.id}">Edit</button>
+              <button class="btn-del-prod text-red-500 hover:text-red-700 p-1 text-xs font-bold" data-id="${prod.id}">Delete</button>
+            </td>
+          </tr>
+        `;
 
-      tbody.querySelectorAll('.btn-del-sku').forEach(b => {
-        b.onclick = () => {
-          appState.catalog = appState.catalog.filter(i => i.id !== b.dataset.id);
-          saveState();
-          renderAdminTable();
-        };
-      });
-    }
+        // NESTED SEPARATE ROWS FOR MULTIPLE SIZES
+        if (hasMultiple && isExpanded) {
+          prod.variants.forEach(v => {
+            const vStock = Number(v.stock || 0);
+            const vLow = vStock > 0 && vStock <= 5;
+            const vOut = vStock === 0;
 
-    function renderCustomerStorefront() {
-      const grid = document.getElementById('customerProductGrid');
-      grid.innerHTML = appState.catalog.map(item => `
-        <div class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
-          <div class="text-3xl">${item.emoji || '🛍️'}</div>
-          <div>
-            <h3 class="font-extrabold text-slate-900 text-sm">${item.name}</h3>
-            <span class="text-xs font-bold text-slate-500">Size: ${item.size}</span>
-          </div>
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-            <span class="text-base font-extrabold text-slate-900">₹${item.price}</span>
-            <button class="btn-add-cart px-4 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold" data-id="${item.id}">
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      `).join('');
-
-      grid.querySelectorAll('.btn-add-cart').forEach(b => {
-        b.onclick = () => {
-          const id = b.dataset.id;
-          appState.cart[id] = (appState.cart[id] || 0) + 1;
-          updateCustomerCart();
-        };
-      });
-    }
-
-    function updateCustomerCart() {
-      const keys = Object.keys(appState.cart);
-      let totalQty = 0;
-      let totalSum = 0;
-      keys.forEach(k => {
-        const item = appState.catalog.find(i => i.id === k);
-        if (item) {
-          totalQty += appState.cart[k];
-          totalSum += (appState.cart[k] * item.price);
+            html += `
+              <tr class="bg-amber-50/30 border-b border-slate-100">
+                <td class="py-2.5 pl-10 pr-4 text-xs font-bold text-slate-800 flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full ${vOut ? 'bg-red-500' : vLow ? 'bg-amber-500' : 'bg-emerald-500'}"></span>
+                  <span>↳ ${v.size}</span>
+                </td>
+                <td class="py-2 px-3 font-mono text-xs font-semibold text-slate-700">${v.sku || '-'}</td>
+                <td class="py-2 px-3 text-slate-400 text-xs">—</td>
+                <td class="py-2 px-3 text-xs font-extrabold text-slate-700">${v.size}</td>
+                <td class="py-2 px-3 text-xs font-extrabold text-slate-900">₹${v.price}</td>
+                <td class="py-2 px-4 text-center">
+                  <div class="inline-flex items-center space-x-1.5 bg-white border border-slate-200 p-0.5 rounded-xl">
+                    <button class="btn-dec-v w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs" data-pid="${prod.id}" data-vid="${v.id}">-</button>
+                    <span class="w-7 text-center font-extrabold text-xs text-slate-800">${vStock}</span>
+                    <button class="btn-inc-v w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs" data-pid="${prod.id}" data-vid="${v.id}">+</button>
+                  </div>
+                  <span class="block text-[9px] font-bold ${vOut ? 'text-red-600' : vLow ? 'text-amber-600' : 'text-slate-400'}">
+                    ${vOut ? 'Sold out' : vLow ? `Low · ${vStock} left` : 'Available'}
+                  </span>
+                </td>
+                <td class="py-2 px-3 text-right">
+                  <span class="text-[10px] text-slate-400 font-semibold">Variant</span>
+                </td>
+              </tr>
+            `;
+          });
         }
       });
 
-      const bar = document.getElementById('floatingCartBar');
-      if (totalQty > 0) {
-        bar.classList.remove('hidden');
-        document.getElementById('cartTotalItemsCount').textContent = totalQty;
-        document.getElementById('cartSubtotalAmount').textContent = `₹${totalSum}`;
-      } else {
-        bar.classList.add('hidden');
-      }
+      tbody.innerHTML = html;
 
-      const drawer = document.getElementById('cartDrawerItems');
-      drawer.innerHTML = keys.map(k => {
-        const item = appState.catalog.find(i => i.id === k);
-        return `
-          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
-            <div>
-              <div class="text-xs font-bold text-slate-900">${item.name} (${item.size})</div>
-              <div class="text-[11px] text-slate-500">₹${item.price} &times; ${appState.cart[k]}</div>
-            </div>
-            <button class="btn-remove-cart text-red-500 font-bold text-xs" data-id="${k}">✕</button>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('drawerTotalAmount').textContent = `₹${totalSum}`;
-
-      drawer.querySelectorAll('.btn-remove-cart').forEach(b => {
-        b.onclick = () => {
-          delete appState.cart[b.dataset.id];
-          updateCustomerCart();
-        };
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadState();
-
-      document.getElementById('navAdminBtn').onclick = () => {
-        document.getElementById('viewAdmin').classList.remove('hidden');
-        document.getElementById('viewCustomer').classList.add('hidden');
-        document.getElementById('viewOrders').classList.add('hidden');
-        renderAdminTable();
-      };
-
-      document.getElementById('navCustomerBtn').onclick = () => {
-        document.getElementById('viewAdmin').classList.add('hidden');
-        document.getElementById('viewCustomer').classList.remove('hidden');
-        document.getElementById('viewOrders').classList.add('hidden');
-        renderCustomerStorefront();
-      };
-
-      document.getElementById('navOrdersBtn').onclick = () => {
-        document.getElementById('viewAdmin').classList.add('hidden');
-        document.getElementById('viewCustomer').classList.add('hidden');
-        document.getElementById('viewOrders').classList.remove('hidden');
-      };
-
-      document.getElementById('adminSearchInput').oninput = (e) => {
-        appState.searchQuery = e.target.value;
-        renderAdminTable();
-      };
-
-      document.querySelectorAll('.filter-stock-btn').forEach(btn => {
-        btn.onclick = () => {
-          document.querySelectorAll('.filter-stock-btn').forEach(b => {
-            b.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-100 text-slate-600';
-          });
-          btn.className = 'filter-stock-btn px-3 py-1.5 rounded-lg font-medium bg-slate-900 text-white';
-          appState.filterStatus = btn.dataset.filter;
-          renderAdminTable();
+      // Expand / Collapse Multi-variant click
+      tbody.querySelectorAll('tr[data-prodid]').forEach(row => {
+        row.onclick = (e) => {
+          if (e.target.closest('button')) return; // ignore button clicks
+          const id = row.dataset.prodid;
+          const prod = appState.products.find(p => p.id === id);
+          if (prod && prod.variants.length > 1) {
+            if (appState.expandedProductIds.has(id)) appState.expandedProductIds.delete(id);
+            else appState.expandedProductIds.add(id);
+            renderAdminTable();
+          }
         };
       });
 
-      document.getElementById('btnOpenAddSku').onclick = () => {
-        document.getElementById('modalSku').classList.remove('hidden');
-      };
-      document.getElementById('btnCloseSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
-      document.getElementById('btnCancelSkuModal').onclick = () => document.getElementById('modalSku').classList.add('hidden');
-
-      document.getElementById('skuForm').onsubmit = (e) => {
-        e.preventDefault();
-        appState.catalog.unshift({
-          id: 'sku_' + Date.now(),
-          sku: document.getElementById('skuInputCode').value.trim(),
-          category: document.getElementById('skuInputCategory').value.trim(),
-          name: document.getElementById('skuInputName').value.trim(),
-          size: document.getElementById('skuInputSize').value.trim(),
-          price: parseFloat(document.getElementById('skuInputPrice').value) || 0,
-          stock: parseInt(document.getElementById('skuInputStock').value) || 0,
-          emoji: '🛍️'
-        });
-        saveState();
-        document.getElementById('modalSku').classList.add('hidden');
-        renderAdminTable();
-      };
-
-      document.getElementById('btnOpenCartDrawer').onclick = () => {
-        document.getElementById('cartDrawerBackdrop').classList.remove('hidden');
-        document.getElementById('cartDrawer').classList.remove('translate-x-full');
-      };
-      document.getElementById('btnCloseCartDrawer').onclick = () => {
-        document.getElementById('cartDrawerBackdrop').classList.add('hidden');
-        document.getElementById('cartDrawer').classList.add('translate-x-full');
-      };
-
-      document.getElementById('btnSendWhatsAppOrder').onclick = () => {
-        const name = document.getElementById('buyerNameInput').value.trim();
-        const phone = document.getElementById('buyerPhoneInput').value.trim();
-        if (!name || !phone) { alert('Please provide your name and phone number'); return; }
-        
-        let msg = `*New Order - Sri Lakshman Traders*\nCustomer: ${name} (${phone})\n`;
-        Object.keys(appState.cart).forEach(id => {
-          const it = appState.catalog.find(x => x.id === id);
-          if (it) msg += `- ${it.name} (${it.size}) x ${appState.cart[id]} = ₹${it.price * appState.cart[id]}\n`;
-        });
-        window.open(`https://wa.me/919876543210?text=${encodeURIComponent(msg)}`, '_blank');
-        appState.cart = {};
-        updateCustomerCart();
-        document.getElementById('btnCloseCartDrawer').click();
-      };
-
-      document.getElementById('btnShareStore').onclick = () => {
-        const liveUrl = (window.location.protocol.startsWith('http')) 
-          ? window.location.href.split('#')[0].split('?')[0] 
-          : 'https://raghuveerbhatcoder.github.io/orderpage/';
-        document.getElementById('shareLinkInput').value = liveUrl;
-        document.getElementById('shareQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(liveUrl)}`;
-        document.getElementById('modalShare').classList.remove('hidden');
-      };
-      document.getElementById('btnCloseShareModal').onclick = () => document.getElementById('modalShare').classList.add('hidden');
-      document.getElementById('btnCopyShareLink').onclick = () => {
-        const el = document.getElementById('shareLinkInput');
-        el.select();
-        document.execCommand('copy');
-        alert('Copied to clipboard!');
-      };
-
-      renderAdminTable();
-    });
-  </script>
-</body>
-</html>
+      // Increment / Decrement Stock
+      tbody.querySelectorAll('.btn-inc-v').forEach
